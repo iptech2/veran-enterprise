@@ -114,24 +114,24 @@ exports.register = async (req, res) => {
     //   `
     // );
 try {
-  await sendEmail(
-    email,
-    "Verify Your Account",
-    `
-    <div style="font-family:Arial;padding:20px">
-      <h2>Welcome to Veran Enterprise</h2>
+  // await sendEmail(
+  //   email,
+  //   "Verify Your Account",
+  //   `
+  //   <div style="font-family:Arial;padding:20px">
+  //     <h2>Welcome to Veran Enterprise</h2>
 
-      <p>Please verify your email to activate your account.</p>
+  //     <p>Please verify your email to activate your account.</p>
 
-      <a href="${verifyLink}"
-         style="display:inline-block;padding:10px 20px;
-         background:#28a745;color:#fff;
-         text-decoration:none;border-radius:5px;">
-        Verify Email
-      </a>
-    </div>
-    `
-  );
+  //     <a href="${verifyLink}"
+  //        style="display:inline-block;padding:10px 20px;
+  //        background:#28a745;color:#fff;
+  //        text-decoration:none;border-radius:5px;">
+  //       Verify Email
+  //     </a>
+  //   </div>
+  //   `
+  // );
 } catch (err) {
   console.error("Email sending failed:", err.message);
 }
