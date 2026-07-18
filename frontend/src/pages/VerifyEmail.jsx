@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../services/api";
 
 export default function VerifyEmail() {
   const { token } = useParams();
   const navigate = useNavigate();
 
-  const [status, setStatus] = useState("loading"); 
+  const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -14,14 +14,11 @@ export default function VerifyEmail() {
       try {
         setStatus("loading");
 
-        const res = await axios.get(
-          `http://localhost:5000/api/auth/verify/${token}`
-        );
+        const res = await api.get(`/auth/verify/${token}`);
 
         setStatus("success");
         setMessage(res.data.message);
 
-        // auto redirect after 3 seconds
         setTimeout(() => {
           navigate("/");
         }, 3000);
@@ -42,24 +39,24 @@ export default function VerifyEmail() {
     <div className="container mt-5 text-center">
 
       {status === "loading" && (
-        <div>
+        <>
           <h3>Verifying your email...</h3>
           <p>Please wait...</p>
-        </div>
+        </>
       )}
 
       {status === "success" && (
-        <div>
+        <>
           <h2 className="text-success">✅ {message}</h2>
-          <p>You will be redirected to login...</p>
-        </div>
+          <p>Redirecting to login...</p>
+        </>
       )}
 
       {status === "error" && (
-        <div>
+        <>
           <h2 className="text-danger">❌ {message}</h2>
-          <p>Please try registering again.</p>
-        </div>
+          <p>Please try again.</p>
+        </>
       )}
 
     </div>
