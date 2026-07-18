@@ -95,46 +95,35 @@ exports.register = async (req, res) => {
 
     const verifyLink = `${process.env.CLIENT_URL}/verify/${token}`;
 
-    // await sendEmail(
-    //   email,
-    //   "Verify Your Account",
-    //   `
-    //   <div style="font-family:Arial;padding:20px">
-    //     <h2>Welcome to Veran Enterprise</h2>
+sendEmail(
+  email,
+  "Verify Your Account",
+  `
+  <div style="font-family:Arial;padding:20px">
 
-    //     <p>Please verify your email to activate your account.</p>
+    <h2>Welcome to Veran Enterprise</h2>
 
-    //     <a href="${verifyLink}"
-    //        style="display:inline-block;padding:10px 20px;
-    //        background:#28a745;color:#fff;
-    //        text-decoration:none;border-radius:5px;">
-    //       Verify Email
-    //     </a>
-    //   </div>
-    //   `
-    // );
-try {
-  // await sendEmail(
-  //   email,
-  //   "Verify Your Account",
-  //   `
-  //   <div style="font-family:Arial;padding:20px">
-  //     <h2>Welcome to Veran Enterprise</h2>
+    <p>Please verify your email to activate your account.</p>
 
-  //     <p>Please verify your email to activate your account.</p>
+    <a
+      href="${verifyLink}"
+      style="
+        display:inline-block;
+        padding:12px 20px;
+        background:#198754;
+        color:white;
+        text-decoration:none;
+        border-radius:5px;
+      "
+    >
+      Verify Email
+    </a>
 
-  //     <a href="${verifyLink}"
-  //        style="display:inline-block;padding:10px 20px;
-  //        background:#28a745;color:#fff;
-  //        text-decoration:none;border-radius:5px;">
-  //       Verify Email
-  //     </a>
-  //   </div>
-  //   `
-  // );
-} catch (err) {
-  console.error("Email sending failed:", err.message);
-}
+  </div>
+  `
+).catch((err) => {
+  console.error("Verification email failed:", err.message);
+});
     return res.status(201).json({
       success: true,
       message: "Registration successful. Check your email.",
@@ -284,18 +273,46 @@ exports.forgotPassword = async (req, res) => {
 
     const resetLink = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
-    await sendEmail(
-      email,
-      "Password Reset",
-      `
-      <h2>Password Reset Request</h2>
+    // await sendEmail(
+    //   email,
+    //   "Password Reset",
+    //   `
+    //   <h2>Password Reset Request</h2>
 
-      <a href="${resetLink}">
-        Reset Password
-      </a>
-      `
-    );
+    //   <a href="${resetLink}">
+    //     Reset Password
+    //   </a>
+    //   `
+    // );
+sendEmail(
+  email,
+  "Password Reset",
+  `
+  <div style="font-family:Arial;padding:20px">
 
+    <h2>Password Reset</h2>
+
+    <p>Click the button below to reset your password.</p>
+
+    <a
+      href="${resetLink}"
+      style="
+        display:inline-block;
+        padding:12px 20px;
+        background:#0d6efd;
+        color:white;
+        text-decoration:none;
+        border-radius:5px;
+      "
+    >
+      Reset Password
+    </a>
+
+  </div>
+  `
+).catch((err) => {
+  console.error("Password reset email failed:", err.message);
+});
     return res.json({
       message: "Password reset email sent",
     });

@@ -1,26 +1,23 @@
-const transporter = require("../config/mail");
+const { Resend } = require("resend");
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendEmail = async (to, subject, html) => {
   try {
-    console.log("EMAIL_USER:", process.env.EMAIL_USER);
-    console.log(
-      "EMAIL_PASS:",
-      process.env.EMAIL_PASS ? "Loaded" : "Missing"
-    );
-
-    const info = await transporter.sendMail({
-      from: `"Veran Enterprise" <${process.env.EMAIL_USER}>`,
+    const response = await resend.emails.send({
+      from: "Veran Enterprise <onboarding@resend.dev>",
       to,
       subject,
       html,
     });
 
-    console.log("✅ Email sent:", info.response);
+    console.log("✅ Email sent:", response);
 
-    return info;
-  } catch (error) {
-    console.error("❌ EMAIL ERROR:", error);
-    throw error;
+    return response;
+  } catch (err) {
+    console.error("❌ Email Error:", err);
+
+    throw err;
   }
 };
 
