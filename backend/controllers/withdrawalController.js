@@ -61,7 +61,45 @@ exports.createWithdrawal = async (req, res) => {
       description: "Withdrawal request",
     });
 // adding my own
-    await sendEmail(
+//     await sendEmail(
+//   user.email,
+//   "Withdrawal Request Received",
+//   `
+//     <h2>Withdrawal Request Received</h2>
+
+//     <p>Hello <strong>${user.fullName}</strong>,</p>
+
+//     <p>Your withdrawal request has been received successfully.</p>
+
+//     <table border="1" cellpadding="8" cellspacing="0">
+//       <tr>
+//         <td><strong>Amount</strong></td>
+//         <td>KES ${withdrawAmount.toLocaleString()}</td>
+//       </tr>
+
+//       <tr>
+//         <td><strong>Phone</strong></td>
+//         <td>${phone}</td>
+//       </tr>
+
+//       <tr>
+//         <td><strong>Status</strong></td>
+//         <td>Pending Review</td>
+//       </tr>
+//     </table>
+
+//     <br>
+
+//     <p>
+//       We will notify you once the request has been processed.
+//     </p>
+
+//     <br>
+
+//     <p>Veran Investment Platform</p>
+//   `
+// );
+sendEmail(
   user.email,
   "Withdrawal Request Received",
   `
@@ -98,7 +136,9 @@ exports.createWithdrawal = async (req, res) => {
 
     <p>Veran Investment Platform</p>
   `
-);
+).catch((err) => {
+  console.error("Withdrawal request email failed:", err.message);
+});
 
 
     res.status(201).json({
@@ -207,7 +247,7 @@ exports.updateWithdrawalStatus = async (req, res) => {
 
 if (status === "paid") {
 
-  await sendEmail(
+   sendEmail(
     user.email,
     "Withdrawal Paid",
     `
@@ -238,13 +278,14 @@ if (status === "paid") {
 
       <p>Thank you for investing with Veran.</p>
     `
-  );
-
+  ).catch((err) => {
+  console.error("Paid withdrawal email failed:", err.message);
+});
 }
 // adding 
 if (status === "rejected") {
 
-  await sendEmail(
+ sendEmail(
     user.email,
     "Withdrawal Request Rejected",
     `
@@ -274,7 +315,9 @@ if (status === "rejected") {
         If you believe this is an error, please contact support.
       </p>
     `
-  );
+).catch((err) => {
+  console.error("Rejected withdrawal email failed:", err.message);
+});
 
 }
 
