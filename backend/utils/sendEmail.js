@@ -8,50 +8,50 @@ console.log(
     ? process.env.EMAIL_PASS.substring(0, 8) + "..."
     : "Missing"
 );
-const nodemailer = require("nodemailer");
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: 465,
-  secure: true,
-  requireTLS: true,
 
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+const Brevo = require("@getbrevo/brevo");
 
-  tls: {
-    rejectUnauthorized: false,
-  },
+const apiInstance = new Brevo.TransactionalEmailsApi();
 
-  connectionTimeout: 60000,
-  greetingTimeout: 60000,
-  socketTimeout: 60000,
-});
-
-transporter.verify((err, success) => {
-  if (err) {
-    console.error("SMTP Verify Error:", err);
-  } else {
-    console.log("✅ Brevo SMTP Connected");
-  }
-});
+apiInstance.setApiKey(
+  Brevo.TransactionalEmailsApiApiKeys.apiKey,
+  process.env.BREVO_API_KEY
+);
 
 async function sendEmail(to, subject, html) {
-  const info = await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
-    to,
-    subject,
-    html,
-  });
+  try {
+    const sendSmtpEmail = new Brevo.SendSmtpEmail();
 
-  console.log("Email sent:", info.messageId);
+    sendSmtpEmail.subject = subject;
+    sendSmtpEmail.htmlContent = html;
 
-  return info;
+    sendSmtpEmail.sender = {
+      name: "Veran Enterprise",
+      email: "koskeybaphin1@gmail.com",
+    };
+
+    sendSmtpEmail.to = [
+      {
+        email: to,
+      },
+    ];
+
+    const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
+
+    console.log("✅ Email sent:", result.body);
+
+    return result.body;
+
+  } catch (err) {
+    console.error("❌ Brevo Email Error:", err.response?.body || err.message);
+    throw err;
+  }
 }
 
 module.exports = sendEmail;
+
+
 // resend 
 // const { Resend } = require("resend");
 
