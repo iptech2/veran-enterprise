@@ -161,47 +161,53 @@ const sendEmail = require("../utils/sendEmail");
 console.log("✅ Investment Cron Started...");
 
 // Every minute (Testing)
-// Production: 0 0 * * *
+// // Production: 0 0 * * *
+
 cron.schedule("* * * * *", async () => {
   try {
     const now = new Date();
 
+    // Process only 10 matured investments at a time
     const investments = await Investment.find({
       status: "active",
       endDate: { $lte: now },
-    }).populate("package");
+    })
+      .populate("package")
+      .limit(10);
 
-    if (!investments.length) {
+    if (investments.length === 0) {
       console.log("Investment Cron: No matured investments.");
       return;
     }
 
+    console.log(
+      `🔄 Processing ${investments.length} matured investment(s)...`
+    );
+
     for (const investment of investments) {
       try {
-        // Skip invalid package
+        // Skip if package missing
         if (!investment.package) {
           console.log(
-            `❌ Invalid package for investment ${investment._id}`
+            `❌ Missing package: ${investment._id}`
           );
 
           investment.status = "cancelled";
           await investment.save();
-
           continue;
         }
 
-        // Skip invalid ROI / Profit
+        // Skip if ROI/profit invalid
         if (
           investment.roi == null ||
           investment.profit == null
         ) {
           console.log(
-            `❌ Invalid ROI/Profit for investment ${investment._id}`
+            `❌ Invalid ROI/profit: ${investment._id}`
           );
 
           investment.status = "cancelled";
           await investment.save();
-
           continue;
         }
 
@@ -209,16 +215,15 @@ cron.schedule("* * * * *", async () => {
 
         if (!user) {
           console.log(
-            `❌ User not found for investment ${investment._id}`
+            `❌ Missing user: ${investment._id}`
           );
 
           investment.status = "cancelled";
           await investment.save();
-
           continue;
         }
 
-        // Prevent duplicate processing
+        // Mark completed BEFORE crediting
         investment.status = "completed";
         await investment.save();
 
@@ -226,10 +231,8 @@ cron.schedule("* * * * *", async () => {
           investment.amount + investment.profit;
 
         user.balance += totalPayout;
-
         await user.save();
 
-        // Principal transaction
         await Transaction.create({
           user: user._id,
           type: "investment",
@@ -239,7 +242,6 @@ cron.schedule("* * * * *", async () => {
           description: `Principal returned from ${investment.package.name}`,
         });
 
-        // Profit transaction
         await Transaction.create({
           user: user._id,
           type: "profit",
@@ -249,70 +251,39 @@ cron.schedule("* * * * *", async () => {
           description: `Profit from ${investment.package.name}`,
         });
 
-        // Send email without blocking cron
         sendEmail(
           user.email,
           "Investment Completed Successfully",
           `
-          <h2>🎉 Investment Completed</h2>
+          <h2>Investment Completed</h2>
 
           <p>Hello <strong>${user.fullName}</strong>,</p>
 
-          <p>
-            Congratulations! Your investment has matured successfully.
-          </p>
+          <p>Your investment has matured successfully.</p>
 
-          <table border="1" cellpadding="8" cellspacing="0">
+          <p><strong>Package:</strong> ${investment.package.name}</p>
 
-            <tr>
-              <td><strong>Package</strong></td>
-              <td>${investment.package.name}</td>
-            </tr>
+          <p><strong>Capital:</strong> KES ${investment.amount.toLocaleString()}</p>
 
-            <tr>
-              <td><strong>Capital Returned</strong></td>
-              <td>KES ${investment.amount.toLocaleString()}</td>
-            </tr>
+          <p><strong>Profit:</strong> KES ${investment.profit.toLocaleString()}</p>
 
-            <tr>
-              <td><strong>Profit Earned</strong></td>
-              <td>KES ${investment.profit.toLocaleString()}</td>
-            </tr>
+          <p><strong>Total:</strong> KES ${totalPayout.toLocaleString()}</p>
 
-            <tr>
-              <td><strong>Total Credited</strong></td>
-              <td>KES ${totalPayout.toLocaleString()}</td>
-            </tr>
-
-            <tr>
-              <td><strong>Wallet Balance</strong></td>
-              <td>KES ${user.balance.toLocaleString()}</td>
-            </tr>
-
-          </table>
+          <p><strong>Wallet Balance:</strong> KES ${user.balance.toLocaleString()}</p>
 
           <br>
 
-          <p>
-            The funds have been credited automatically to your wallet.
-          </p>
-
-          <br>
-
-          <p>
-            Thank you for investing with
-            <strong> Veran Investment Platform.</strong>
-          </p>
+          <p>Thank you for investing with Veran Enterprise.</p>
           `
-        ).catch((err) => {
+        ).catch(err =>
           console.error(
-            `❌ Investment completion email failed for ${user.email}:`,
+            `Email failed for ${user.email}:`,
             err.message
-          );
-        });
+          )
+        );
 
         console.log(
-          `✔ ${user.fullName} credited KES ${totalPayout.toLocaleString()}`
+          `✅ ${user.fullName} credited KES ${totalPayout.toLocaleString()}`
         );
 
       } catch (err) {
@@ -323,12 +294,180 @@ cron.schedule("* * * * *", async () => {
       }
     }
 
-    console.log(
-      `✅ Investment Cron: ${investments.length} investment(s) processed.`
-    );
+    console.log("✅ Investment Cron cycle completed.");
 
   } catch (err) {
-    console.error("❌ Investment Cron Error:", err.message);
+    console.error("Investment Cron Error:", err.message);
   }
 });
+
+// cron.schedule("* * * * *", async () => {
+//   try {
+//     const now = new Date();
+
+//     const investments = await Investment.find({
+//       status: "active",
+//       endDate: { $lte: now },
+//     }).populate("package");
+
+//     if (!investments.length) {
+//       console.log("Investment Cron: No matured investments.");
+//       return;
+//     }
+
+//     for (const investment of investments) {
+//       try {
+//         // Skip invalid package
+//         if (!investment.package) {
+//           console.log(
+//             `❌ Invalid package for investment ${investment._id}`
+//           );
+
+//           investment.status = "cancelled";
+//           await investment.save();
+
+//           continue;
+//         }
+
+//         // Skip invalid ROI / Profit
+//         if (
+//           investment.roi == null ||
+//           investment.profit == null
+//         ) {
+//           console.log(
+//             `❌ Invalid ROI/Profit for investment ${investment._id}`
+//           );
+
+//           investment.status = "cancelled";
+//           await investment.save();
+
+//           continue;
+//         }
+
+//         const user = await User.findById(investment.user);
+
+//         if (!user) {
+//           console.log(
+//             `❌ User not found for investment ${investment._id}`
+//           );
+
+//           investment.status = "cancelled";
+//           await investment.save();
+
+//           continue;
+//         }
+
+//         // Prevent duplicate processing
+//         investment.status = "completed";
+//         await investment.save();
+
+//         const totalPayout =
+//           investment.amount + investment.profit;
+
+//         user.balance += totalPayout;
+
+//         await user.save();
+
+//         // Principal transaction
+//         await Transaction.create({
+//           user: user._id,
+//           type: "investment",
+//           amount: investment.amount,
+//           status: "completed",
+//           reference: randomUUID(),
+//           description: `Principal returned from ${investment.package.name}`,
+//         });
+
+//         // Profit transaction
+//         await Transaction.create({
+//           user: user._id,
+//           type: "profit",
+//           amount: investment.profit,
+//           status: "completed",
+//           reference: randomUUID(),
+//           description: `Profit from ${investment.package.name}`,
+//         });
+
+//         // Send email without blocking cron
+//         sendEmail(
+//           user.email,
+//           "Investment Completed Successfully",
+//           `
+//           <h2>🎉 Investment Completed</h2>
+
+//           <p>Hello <strong>${user.fullName}</strong>,</p>
+
+//           <p>
+//             Congratulations! Your investment has matured successfully.
+//           </p>
+
+//           <table border="1" cellpadding="8" cellspacing="0">
+
+//             <tr>
+//               <td><strong>Package</strong></td>
+//               <td>${investment.package.name}</td>
+//             </tr>
+
+//             <tr>
+//               <td><strong>Capital Returned</strong></td>
+//               <td>KES ${investment.amount.toLocaleString()}</td>
+//             </tr>
+
+//             <tr>
+//               <td><strong>Profit Earned</strong></td>
+//               <td>KES ${investment.profit.toLocaleString()}</td>
+//             </tr>
+
+//             <tr>
+//               <td><strong>Total Credited</strong></td>
+//               <td>KES ${totalPayout.toLocaleString()}</td>
+//             </tr>
+
+//             <tr>
+//               <td><strong>Wallet Balance</strong></td>
+//               <td>KES ${user.balance.toLocaleString()}</td>
+//             </tr>
+
+//           </table>
+
+//           <br>
+
+//           <p>
+//             The funds have been credited automatically to your wallet.
+//           </p>
+
+//           <br>
+
+//           <p>
+//             Thank you for investing with
+//             <strong> Veran Investment Platform.</strong>
+//           </p>
+//           `
+//         ).catch((err) => {
+//           console.error(
+//             `❌ Investment completion email failed for ${user.email}:`,
+//             err.message
+//           );
+//         });
+
+//         console.log(
+//           `✔ ${user.fullName} credited KES ${totalPayout.toLocaleString()}`
+//         );
+
+//       } catch (err) {
+//         console.error(
+//           `❌ Error processing investment ${investment._id}:`,
+//           err.message
+//         );
+//       }
+//     }
+
+//     console.log(
+//       `✅ Investment Cron: ${investments.length} investment(s) processed.`
+//     );
+
+//   } catch (err) {
+//     console.error("❌ Investment Cron Error:", err.message);
+//   }
+// });
 
