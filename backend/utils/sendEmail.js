@@ -12,8 +12,8 @@ const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
-  port: 587,
-  secure: false,
+  port: 465,
+  secure: true,
   requireTLS: true,
 
   auth: {
