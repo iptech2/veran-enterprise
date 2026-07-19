@@ -47,25 +47,48 @@
 
 // module.exports = transporter;
 
+// const nodemailer = require("nodemailer");
+
+// const transporter = nodemailer.createTransport({
+//   host: "smtp.gmail.com",
+//   port: 465,
+//   secure: true,
+
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS,
+//   },
+// });
+
+// transporter.verify((err) => {
+//   if (err) {
+//     console.error("❌ Mail server error:", err);
+//   } else {
+//     console.log("✅ Gmail SMTP Ready");
+//   }
+// });
+
+// module.exports = transporter;
+
+
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+
+  connectionTimeout: 60000,
+  greetingTimeout: 60000,
+  socketTimeout: 60000,
 });
 
 transporter.verify((err) => {
   if (err) {
-    console.error("❌ Mail server error:", err);
+    console.error(err);
   } else {
-    console.log("✅ Gmail SMTP Ready");
+    console.log("✅ Gmail Ready");
   }
 });
-
-module.exports = transporter;
