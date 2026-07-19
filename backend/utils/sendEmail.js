@@ -1,9 +1,9 @@
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: true,
+  host: process.env.EMAIL_HOST,
+  port: Number(process.env.EMAIL_PORT),
+  secure: false, // Port 587 uses STARTTLS
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -14,14 +14,14 @@ transporter.verify((err) => {
   if (err) {
     console.error("❌ Mail server error:", err);
   } else {
-    console.log("✅ Gmail SMTP Ready");
+    console.log("✅ Brevo SMTP Ready");
   }
 });
 
 async function sendEmail(to, subject, html) {
   try {
     const info = await transporter.sendMail({
-      from: `"Veran Enterprise" <${process.env.EMAIL_USER}>`,
+      from: process.env.EMAIL_FROM,
       to,
       subject,
       html,
@@ -36,7 +36,6 @@ async function sendEmail(to, subject, html) {
 }
 
 module.exports = sendEmail;
-
 
 // resend 
 // const { Resend } = require("resend");
