@@ -12,41 +12,46 @@ const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
-  port: Number(process.env.EMAIL_PORT),
-  secure: false, // Port 587 uses STARTTLS
+  port: 587,
+  secure: false,
+  requireTLS: true,
+
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+
+  tls: {
+    rejectUnauthorized: false,
+  },
+
+  connectionTimeout: 60000,
+  greetingTimeout: 60000,
+  socketTimeout: 60000,
 });
 
-transporter.verify((err) => {
+transporter.verify((err, success) => {
   if (err) {
-    console.error("❌ Mail server error:", err);
+    console.error("SMTP Verify Error:", err);
   } else {
-    console.log("✅ Brevo SMTP Ready");
+    console.log("✅ Brevo SMTP Connected");
   }
 });
 
 async function sendEmail(to, subject, html) {
-  try {
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to,
-      subject,
-      html,
-    });
+  const info = await transporter.sendMail({
+    from: process.env.EMAIL_FROM,
+    to,
+    subject,
+    html,
+  });
 
-    console.log("✅ Email sent:", info.messageId);
-    return info;
-  } catch (err) {
-    console.error("❌ Email Error:", err);
-    throw err;
-  }
+  console.log("Email sent:", info.messageId);
+
+  return info;
 }
 
 module.exports = sendEmail;
-
 // resend 
 // const { Resend } = require("resend");
 
