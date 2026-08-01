@@ -11,8 +11,9 @@ export default function AdminDashboard() {
   const [withdrawals, setWithdrawals] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-const toggleSidebar = () => { setSidebarOpen(!sidebarOpen);};
+const [sidebarOpen, setSidebarOpen] = useState(false);
+
+const toggleSidebar = () => {  setSidebarOpen((prev) => !prev);};
 
   /* ===========================
       LOAD DASHBOARD
@@ -74,10 +75,7 @@ const toggleSidebar = () => { setSidebarOpen(!sidebarOpen);};
     return (
       <div className="d-flex">
         {/* <AdminSidebar /> */}
-        <AdminSidebar
-    isOpen={sidebarOpen}
-    toggleSidebar={toggleSidebar}
-/>
+        <AdminSidebar isOpen={sidebarOpen}   toggleSidebar={toggleSidebar}/>
 
         <div className="flex-grow-1">
 
@@ -95,11 +93,16 @@ const toggleSidebar = () => { setSidebarOpen(!sidebarOpen);};
 return (
   <div className="d-flex">
 
-    <AdminSidebar />
+    <AdminSidebar
+  isOpen={sidebarOpen}
+  toggleSidebar={toggleSidebar}
+/>
 
-    <div className="flex-grow-1 bg-light">
+<div className="flex-grow-1 bg-light">
 
-      <AdminNavbar />
+  <AdminNavbar
+    toggleSidebar={toggleSidebar}
+  />
 
       <div className="container-fluid p-4">
 

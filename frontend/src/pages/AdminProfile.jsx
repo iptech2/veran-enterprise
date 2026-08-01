@@ -4,6 +4,20 @@ import AdminNavbar from "../components/AdminNavbar";
 import api from "../services/api";
 
 export default function AdminProfile() {
+  // ==========================
+  // MOBILE SIDEBAR
+  // ==========================
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
+
+  // ==========================
+  // STATE
+  // ==========================
+
   const [loading, setLoading] = useState(true);
 
   const [profile, setProfile] = useState({
@@ -19,9 +33,9 @@ export default function AdminProfile() {
     confirmPassword: "",
   });
 
-  /* ===========================
-      LOAD PROFILE
-  =========================== */
+  // ==========================
+  // LOAD PROFILE
+  // ==========================
 
   const loadProfile = async () => {
     try {
@@ -47,9 +61,9 @@ export default function AdminProfile() {
     loadProfile();
   }, []);
 
-  /* ===========================
-      UPDATE PROFILE
-  =========================== */
+  // ==========================
+  // UPDATE PROFILE
+  // ==========================
 
   const updateProfile = async (e) => {
     e.preventDefault();
@@ -78,9 +92,9 @@ export default function AdminProfile() {
     }
   };
 
-  /* ===========================
-      CHANGE PASSWORD
-  =========================== */
+  // ==========================
+  // CHANGE PASSWORD
+  // ==========================
 
   const changePassword = async (e) => {
     e.preventDefault();
@@ -93,7 +107,10 @@ export default function AdminProfile() {
     }
 
     try {
-      await api.put("/users/change-password", passwordData);
+      await api.put(
+        "/users/change-password",
+        passwordData
+      );
 
       alert("Password changed successfully.");
 
@@ -110,17 +127,28 @@ export default function AdminProfile() {
     }
   };
 
+  // ==========================
+  // LOADING
+  // ==========================
+
   if (loading) {
     return (
       <div className="d-flex">
-        <AdminSidebar />
+        <AdminSidebar
+          isOpen={sidebarOpen}
+          toggleSidebar={toggleSidebar}
+        />
 
         <div className="flex-grow-1">
-          <AdminNavbar />
+
+          <AdminNavbar
+            toggleSidebar={toggleSidebar}
+          />
 
           <div className="container-fluid p-5">
             <h3>Loading Profile...</h3>
           </div>
+
         </div>
       </div>
     );
@@ -129,11 +157,16 @@ export default function AdminProfile() {
   return (
     <div className="d-flex">
 
-      <AdminSidebar />
+      <AdminSidebar
+        isOpen={sidebarOpen}
+        toggleSidebar={toggleSidebar}
+      />
 
       <div className="flex-grow-1 bg-light">
 
-        <AdminNavbar />
+        <AdminNavbar
+          toggleSidebar={toggleSidebar}
+        />
 
         <div className="container-fluid p-4">
 
@@ -164,6 +197,7 @@ export default function AdminProfile() {
                   <form onSubmit={updateProfile}>
 
                     <div className="mb-3">
+
                       <label className="form-label">
                         Full Name
                       </label>
@@ -174,14 +208,15 @@ export default function AdminProfile() {
                         onChange={(e) =>
                           setProfile({
                             ...profile,
-                            fullName:
-                              e.target.value,
+                            fullName: e.target.value,
                           })
                         }
                       />
+
                     </div>
 
                     <div className="mb-3">
+
                       <label className="form-label">
                         Email
                       </label>
@@ -193,14 +228,15 @@ export default function AdminProfile() {
                         onChange={(e) =>
                           setProfile({
                             ...profile,
-                            email:
-                              e.target.value,
+                            email: e.target.value,
                           })
                         }
                       />
+
                     </div>
 
                     <div className="mb-3">
+
                       <label className="form-label">
                         Phone
                       </label>
@@ -211,14 +247,15 @@ export default function AdminProfile() {
                         onChange={(e) =>
                           setProfile({
                             ...profile,
-                            phone:
-                              e.target.value,
+                            phone: e.target.value,
                           })
                         }
                       />
+
                     </div>
 
                     <div className="mb-3">
+
                       <label className="form-label">
                         Role
                       </label>
@@ -228,10 +265,12 @@ export default function AdminProfile() {
                         value={profile.role}
                         disabled
                       />
+
                     </div>
 
                     <button
                       className="btn btn-primary"
+                      type="submit"
                     >
                       Save Profile
                     </button>
@@ -269,9 +308,7 @@ export default function AdminProfile() {
                       <input
                         type="password"
                         className="form-control"
-                        value={
-                          passwordData.currentPassword
-                        }
+                        value={passwordData.currentPassword}
                         onChange={(e) =>
                           setPasswordData({
                             ...passwordData,
@@ -292,9 +329,7 @@ export default function AdminProfile() {
                       <input
                         type="password"
                         className="form-control"
-                        value={
-                          passwordData.newPassword
-                        }
+                        value={passwordData.newPassword}
                         onChange={(e) =>
                           setPasswordData({
                             ...passwordData,
@@ -329,7 +364,10 @@ export default function AdminProfile() {
 
                     </div>
 
-                    <button className="btn btn-success">
+                    <button
+                      className="btn btn-success"
+                      type="submit"
+                    >
                       Change Password
                     </button>
 

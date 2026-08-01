@@ -1,10 +1,20 @@
-// import { useEffect, useState } from "react";
+// import { useEffect, useMemo, useState } from "react";
 // import AdminSidebar from "../components/AdminSidebar";
+// import AdminNavbar from "../components/AdminNavbar";
 // import api from "../services/api";
 
 // export default function AdminTransactions() {
+
 //   const [transactions, setTransactions] = useState([]);
 //   const [loading, setLoading] = useState(true);
+
+//   const [search, setSearch] = useState("");
+//   const [typeFilter, setTypeFilter] = useState("all");
+//   const [statusFilter, setStatusFilter] = useState("all");
+
+//   // ==========================
+//   // LOAD TRANSACTIONS
+//   // ==========================
 
 //   const loadTransactions = async () => {
 //     try {
@@ -22,6 +32,59 @@
 //     loadTransactions();
 //   }, []);
 
+//   // ==========================
+//   // SUMMARY CARDS
+//   // ==========================
+
+//   const stats = useMemo(() => {
+
+//     return {
+
+//       total: transactions.length,
+
+//       deposits: transactions.filter(
+//         t => t.type === "deposit"
+//       ).length,
+
+//       withdrawals: transactions.filter(
+//         t => t.type === "withdrawal"
+//       ).length,
+
+//       profits: transactions.filter(
+//         t => t.type === "profit"
+//       ).length,
+
+//     };
+
+//   }, [transactions]);
+
+//   // ==========================
+//   // FILTER
+//   // ==========================
+
+//   const filteredTransactions = transactions.filter((trx) => {
+
+//     const keyword = search.toLowerCase();
+
+//     const searchMatch =
+//       trx.user?.fullName?.toLowerCase().includes(keyword) ||
+//       trx.user?.email?.toLowerCase().includes(keyword) ||
+//       trx.reference?.toLowerCase().includes(keyword);
+
+//     const typeMatch =
+//       typeFilter === "all"
+//         ? true
+//         : trx.type === typeFilter;
+
+//     const statusMatch =
+//       statusFilter === "all"
+//         ? true
+//         : trx.status === statusFilter;
+
+//     return searchMatch && typeMatch && statusMatch;
+
+//   });
+
 //   if (loading) {
 //     return (
 //       <div className="d-flex">
@@ -34,68 +97,211 @@
 //   }
 
 //   return (
+
 //     <div className="d-flex">
+
 //       <AdminSidebar />
 
 //       <div className="container-fluid p-4">
 
-//         <h2 className="mb-4">Transactions</h2>
+//         <h2 className="fw-bold mb-4">
+//           Transactions Management
+//         </h2>
+
+//         {/* SUMMARY */}
+
+//         <div className="row mb-4">
+
+//           <div className="col-md-3">
+//             <div className="card shadow text-center border-0">
+//               <div className="card-body">
+//                 <h6>Total</h6>
+//                 <h3>{stats.total}</h3>
+//               </div>
+//             </div>
+//           </div>
+
+//           <div className="col-md-3">
+//             <div className="card shadow text-center border-0">
+//               <div className="card-body">
+//                 <h6>Deposits</h6>
+//                 <h3 className="text-success">
+//                   {stats.deposits}
+//                 </h3>
+//               </div>
+//             </div>
+//           </div>
+
+//           <div className="col-md-3">
+//             <div className="card shadow text-center border-0">
+//               <div className="card-body">
+//                 <h6>Withdrawals</h6>
+//                 <h3 className="text-danger">
+//                   {stats.withdrawals}
+//                 </h3>
+//               </div>
+//             </div>
+//           </div>
+
+//           <div className="col-md-3">
+//             <div className="card shadow text-center border-0">
+//               <div className="card-body">
+//                 <h6>Profits Paid</h6>
+//                 <h3 className="text-warning">
+//                   {stats.profits}
+//                 </h3>
+//               </div>
+//             </div>
+//           </div>
+
+//         </div>
+
+//         {/* SEARCH */}
+
+//         <div className="card shadow mb-3">
+
+//           <div className="card-body">
+
+//             <div className="row g-3">
+
+//               <div className="col-md-5">
+
+//                 <input
+//                   className="form-control"
+//                   placeholder="Search user or reference..."
+//                   value={search}
+//                   onChange={(e) =>
+//                     setSearch(e.target.value)
+//                   }
+//                 />
+
+//               </div>
+
+//               <div className="col-md-3">
+
+//                 <select
+//                   className="form-select"
+//                   value={typeFilter}
+//                   onChange={(e) =>
+//                     setTypeFilter(e.target.value)
+//                   }
+//                 >
+
+//                   <option value="all">All Types</option>
+//                   <option value="deposit">Deposit</option>
+//                   <option value="withdrawal">Withdrawal</option>
+//                   <option value="investment">Investment</option>
+//                   <option value="profit">Profit</option>
+//                   <option value="referral">Referral</option>
+
+//                 </select>
+
+//               </div>
+
+//               <div className="col-md-4">
+
+//                 <select
+//                   className="form-select"
+//                   value={statusFilter}
+//                   onChange={(e) =>
+//                     setStatusFilter(e.target.value)
+//                   }
+//                 >
+
+//                   <option value="all">All Status</option>
+//                   <option value="completed">Completed</option>
+//                   <option value="pending">Pending</option>
+//                   <option value="approved">Approved</option>
+//                   <option value="rejected">Rejected</option>
+
+//                 </select>
+
+//               </div>
+
+//             </div>
+
+//           </div>
+
+//         </div>
+
+//         {/* TABLE */}
 
 //         <div className="card shadow">
 
-//           <div className="card-header bg-dark text-white">
-//             <h4 className="mb-0">All Transactions</h4>
+//           <div className="card-header bg-dark text-white d-flex justify-content-between">
+
+//             <strong>All Transactions</strong>
+
+//             <span className="badge bg-light text-dark">
+//               {filteredTransactions.length} Records
+//             </span>
+
 //           </div>
 
 //           <div className="table-responsive">
 
-//             <table className="table table-hover table-striped">
+//             <table className="table table-hover align-middle mb-0">
 
 //               <thead className="table-dark">
+
 //                 <tr>
+
 //                   <th>User</th>
 //                   <th>Type</th>
 //                   <th>Amount</th>
 //                   <th>Status</th>
+//                   <th>Reference</th>
 //                   <th>Description</th>
 //                   <th>Date</th>
+
 //                 </tr>
+
 //               </thead>
 
 //               <tbody>
 
-//                 {transactions.length === 0 ? (
+//                 {filteredTransactions.length === 0 ? (
+
 //                   <tr>
-//                     <td colSpan="6" className="text-center">
+
+//                     <td colSpan="7" className="text-center">
+
 //                       No transactions found.
+
 //                     </td>
+
 //                   </tr>
+
 //                 ) : (
-//                   transactions.map((trx) => (
+
+//                   filteredTransactions.map((trx) => (
+
 //                     <tr key={trx._id}>
 
 //                       <td>
-//                         {trx.user?.fullName || "N/A"}
+//                         {trx.user?.fullName}
 //                       </td>
 
 //                       <td>
+
 //                         <span
-//                           className={
+//                           className={`badge ${
 //                             trx.type === "deposit"
-//                               ? "badge bg-success"
+//                               ? "bg-success"
 //                               : trx.type === "withdrawal"
-//                               ? "badge bg-danger"
+//                               ? "bg-danger"
 //                               : trx.type === "investment"
-//                               ? "badge bg-primary"
+//                               ? "bg-primary"
 //                               : trx.type === "profit"
-//                               ? "badge bg-warning text-dark"
+//                               ? "bg-warning text-dark"
 //                               : trx.type === "referral"
-//                               ? "badge bg-info"
-//                               : "badge bg-secondary"
-//                           }
+//                               ? "bg-info"
+//                               : "bg-secondary"
+//                           }`}
 //                         >
 //                           {trx.type}
 //                         </span>
+
 //                       </td>
 
 //                       <td>
@@ -103,22 +309,26 @@
 //                       </td>
 
 //                       <td>
+
 //                         <span
-//                           className={
+//                           className={`badge ${
 //                             trx.status === "completed"
-//                               ? "badge bg-success"
+//                               ? "bg-success"
 //                               : trx.status === "pending"
-//                               ? "badge bg-warning text-dark"
+//                               ? "bg-warning text-dark"
 //                               : trx.status === "approved"
-//                               ? "badge bg-primary"
+//                               ? "bg-primary"
 //                               : trx.status === "rejected"
-//                               ? "badge bg-danger"
-//                               : "badge bg-secondary"
-//                           }
+//                               ? "bg-danger"
+//                               : "bg-secondary"
+//                           }`}
 //                         >
 //                           {trx.status}
 //                         </span>
+
 //                       </td>
+
+//                       <td>{trx.reference || "-"}</td>
 
 //                       <td>{trx.description}</td>
 
@@ -127,7 +337,9 @@
 //                       </td>
 
 //                     </tr>
+
 //                   ))
+
 //                 )}
 
 //               </tbody>
@@ -139,15 +351,32 @@
 //         </div>
 
 //       </div>
+
 //     </div>
+
 //   );
+
 // }
 
 import { useEffect, useMemo, useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
+import AdminNavbar from "../components/AdminNavbar";
 import api from "../services/api";
 
 export default function AdminTransactions() {
+  // ==========================
+  // MOBILE SIDEBAR
+  // ==========================
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
+
+  // ==========================
+  // STATE
+  // ==========================
 
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -177,29 +406,25 @@ export default function AdminTransactions() {
   }, []);
 
   // ==========================
-  // SUMMARY CARDS
+  // SUMMARY
   // ==========================
 
   const stats = useMemo(() => {
-
     return {
-
       total: transactions.length,
 
       deposits: transactions.filter(
-        t => t.type === "deposit"
+        (t) => t.type === "deposit"
       ).length,
 
       withdrawals: transactions.filter(
-        t => t.type === "withdrawal"
+        (t) => t.type === "withdrawal"
       ).length,
 
       profits: transactions.filter(
-        t => t.type === "profit"
+        (t) => t.type === "profit"
       ).length,
-
     };
-
   }, [transactions]);
 
   // ==========================
@@ -207,7 +432,6 @@ export default function AdminTransactions() {
   // ==========================
 
   const filteredTransactions = transactions.filter((trx) => {
-
     const keyword = search.toLowerCase();
 
     const searchMatch =
@@ -226,16 +450,29 @@ export default function AdminTransactions() {
         : trx.status === statusFilter;
 
     return searchMatch && typeMatch && statusMatch;
-
   });
 
   if (loading) {
     return (
       <div className="d-flex">
-        <AdminSidebar />
-        <div className="container-fluid p-5">
-          <h3>Loading Transactions...</h3>
+
+        <AdminSidebar
+          isOpen={sidebarOpen}
+          toggleSidebar={toggleSidebar}
+        />
+
+        <div className="flex-grow-1">
+
+          <AdminNavbar
+            toggleSidebar={toggleSidebar}
+          />
+
+          <div className="container-fluid p-5">
+            <h3>Loading Transactions...</h3>
+          </div>
+
         </div>
+
       </div>
     );
   }
@@ -244,260 +481,264 @@ export default function AdminTransactions() {
 
     <div className="d-flex">
 
-      <AdminSidebar />
+      <AdminSidebar
+        isOpen={sidebarOpen}
+        toggleSidebar={toggleSidebar}
+      />
 
-      <div className="container-fluid p-4">
+      <div className="flex-grow-1 bg-light">
 
-        <h2 className="fw-bold mb-4">
-          Transactions Management
-        </h2>
+        <AdminNavbar
+          toggleSidebar={toggleSidebar}
+        />
 
-        {/* SUMMARY */}
+        <div className="container-fluid p-4">
 
-        <div className="row mb-4">
+          <h2 className="fw-bold mb-4">
+            Transactions Management
+          </h2>
 
-          <div className="col-md-3">
-            <div className="card shadow text-center border-0">
-              <div className="card-body">
-                <h6>Total</h6>
-                <h3>{stats.total}</h3>
+          {/* SUMMARY */}
+
+          <div className="row mb-4">
+
+            <div className="col-md-3">
+              <div className="card shadow text-center border-0">
+                <div className="card-body">
+                  <h6>Total</h6>
+                  <h3>{stats.total}</h3>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="col-md-3">
-            <div className="card shadow text-center border-0">
-              <div className="card-body">
-                <h6>Deposits</h6>
-                <h3 className="text-success">
-                  {stats.deposits}
-                </h3>
+            <div className="col-md-3">
+              <div className="card shadow text-center border-0">
+                <div className="card-body">
+                  <h6>Deposits</h6>
+                  <h3 className="text-success">
+                    {stats.deposits}
+                  </h3>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="col-md-3">
-            <div className="card shadow text-center border-0">
-              <div className="card-body">
-                <h6>Withdrawals</h6>
-                <h3 className="text-danger">
-                  {stats.withdrawals}
-                </h3>
+            <div className="col-md-3">
+              <div className="card shadow text-center border-0">
+                <div className="card-body">
+                  <h6>Withdrawals</h6>
+                  <h3 className="text-danger">
+                    {stats.withdrawals}
+                  </h3>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="col-md-3">
-            <div className="card shadow text-center border-0">
-              <div className="card-body">
-                <h6>Profits Paid</h6>
-                <h3 className="text-warning">
-                  {stats.profits}
-                </h3>
+            <div className="col-md-3">
+              <div className="card shadow text-center border-0">
+                <div className="card-body">
+                  <h6>Profits Paid</h6>
+                  <h3 className="text-warning">
+                    {stats.profits}
+                  </h3>
+                </div>
               </div>
             </div>
+
           </div>
 
-        </div>
+          {/* SEARCH */}
 
-        {/* SEARCH */}
+          <div className="card shadow mb-3">
 
-        <div className="card shadow mb-3">
+            <div className="card-body">
 
-          <div className="card-body">
+              <div className="row g-3">
 
-            <div className="row g-3">
+                <div className="col-md-5">
 
-              <div className="col-md-5">
+                  <input
+                    className="form-control"
+                    placeholder="Search user or reference..."
+                    value={search}
+                    onChange={(e) =>
+                      setSearch(e.target.value)
+                    }
+                  />
 
-                <input
-                  className="form-control"
-                  placeholder="Search user or reference..."
-                  value={search}
-                  onChange={(e) =>
-                    setSearch(e.target.value)
-                  }
-                />
+                </div>
+
+                <div className="col-md-3">
+
+                  <select
+                    className="form-select"
+                    value={typeFilter}
+                    onChange={(e) =>
+                      setTypeFilter(e.target.value)
+                    }
+                  >
+
+                    <option value="all">All Types</option>
+                    <option value="deposit">Deposit</option>
+                    <option value="withdrawal">Withdrawal</option>
+                    <option value="investment">Investment</option>
+                    <option value="profit">Profit</option>
+                    <option value="referral">Referral</option>
+
+                  </select>
+
+                </div>
+
+                <div className="col-md-4">
+
+                  <select
+                    className="form-select"
+                    value={statusFilter}
+                    onChange={(e) =>
+                      setStatusFilter(e.target.value)
+                    }
+                  >
+
+                    <option value="all">All Status</option>
+                    <option value="completed">Completed</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+
+                  </select>
+
+                </div>
 
               </div>
 
-              <div className="col-md-3">
+            </div>
 
-                <select
-                  className="form-select"
-                  value={typeFilter}
-                  onChange={(e) =>
-                    setTypeFilter(e.target.value)
-                  }
+          </div>
+
+          {/* TABLE */}
+          {/* TABLE */}
+
+<div className="card shadow">
+
+  <div className="card-header bg-dark text-white d-flex justify-content-between">
+
+    <strong>All Transactions</strong>
+
+    <span className="badge bg-light text-dark">
+      {filteredTransactions.length} Records
+    </span>
+
+  </div>
+
+  <div className="table-responsive">
+
+    <table className="table table-hover align-middle mb-0">
+
+      <thead className="table-dark">
+
+        <tr>
+
+          <th>User</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Reference</th>
+          <th>Description</th>
+          <th>Date</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        {filteredTransactions.length === 0 ? (
+
+          <tr>
+
+            <td colSpan="7" className="text-center">
+              No transactions found.
+            </td>
+
+          </tr>
+
+        ) : (
+
+          filteredTransactions.map((trx) => (
+
+            <tr key={trx._id}>
+
+              <td>{trx.user?.fullName}</td>
+
+              <td>
+
+                <span
+                  className={`badge ${
+                    trx.type === "deposit"
+                      ? "bg-success"
+                      : trx.type === "withdrawal"
+                      ? "bg-danger"
+                      : trx.type === "investment"
+                      ? "bg-primary"
+                      : trx.type === "profit"
+                      ? "bg-warning text-dark"
+                      : trx.type === "referral"
+                      ? "bg-info"
+                      : "bg-secondary"
+                  }`}
                 >
+                  {trx.type}
+                </span>
 
-                  <option value="all">All Types</option>
-                  <option value="deposit">Deposit</option>
-                  <option value="withdrawal">Withdrawal</option>
-                  <option value="investment">Investment</option>
-                  <option value="profit">Profit</option>
-                  <option value="referral">Referral</option>
+              </td>
 
-                </select>
+              <td>
+                KES {trx.amount.toLocaleString()}
+              </td>
 
-              </div>
+              <td>
 
-              <div className="col-md-4">
-
-                <select
-                  className="form-select"
-                  value={statusFilter}
-                  onChange={(e) =>
-                    setStatusFilter(e.target.value)
-                  }
+                <span
+                  className={`badge ${
+                    trx.status === "completed"
+                      ? "bg-success"
+                      : trx.status === "pending"
+                      ? "bg-warning text-dark"
+                      : trx.status === "approved"
+                      ? "bg-primary"
+                      : trx.status === "rejected"
+                      ? "bg-danger"
+                      : "bg-secondary"
+                  }`}
                 >
+                  {trx.status}
+                </span>
 
-                  <option value="all">All Status</option>
-                  <option value="completed">Completed</option>
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
+              </td>
 
-                </select>
+              <td>{trx.reference || "-"}</td>
 
-              </div>
+              <td>{trx.description}</td>
 
-            </div>
+              <td>
+                {new Date(trx.createdAt).toLocaleString()}
+              </td>
 
-          </div>
+            </tr>
 
-        </div>
+          ))
 
-        {/* TABLE */}
+        )}
 
-        <div className="card shadow">
+      </tbody>
 
-          <div className="card-header bg-dark text-white d-flex justify-content-between">
+    </table>
 
-            <strong>All Transactions</strong>
+  </div>
 
-            <span className="badge bg-light text-dark">
-              {filteredTransactions.length} Records
-            </span>
-
-          </div>
-
-          <div className="table-responsive">
-
-            <table className="table table-hover align-middle mb-0">
-
-              <thead className="table-dark">
-
-                <tr>
-
-                  <th>User</th>
-                  <th>Type</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Reference</th>
-                  <th>Description</th>
-                  <th>Date</th>
-
-                </tr>
-
-              </thead>
-
-              <tbody>
-
-                {filteredTransactions.length === 0 ? (
-
-                  <tr>
-
-                    <td colSpan="7" className="text-center">
-
-                      No transactions found.
-
-                    </td>
-
-                  </tr>
-
-                ) : (
-
-                  filteredTransactions.map((trx) => (
-
-                    <tr key={trx._id}>
-
-                      <td>
-                        {trx.user?.fullName}
-                      </td>
-
-                      <td>
-
-                        <span
-                          className={`badge ${
-                            trx.type === "deposit"
-                              ? "bg-success"
-                              : trx.type === "withdrawal"
-                              ? "bg-danger"
-                              : trx.type === "investment"
-                              ? "bg-primary"
-                              : trx.type === "profit"
-                              ? "bg-warning text-dark"
-                              : trx.type === "referral"
-                              ? "bg-info"
-                              : "bg-secondary"
-                          }`}
-                        >
-                          {trx.type}
-                        </span>
-
-                      </td>
-
-                      <td>
-                        KES {trx.amount.toLocaleString()}
-                      </td>
-
-                      <td>
-
-                        <span
-                          className={`badge ${
-                            trx.status === "completed"
-                              ? "bg-success"
-                              : trx.status === "pending"
-                              ? "bg-warning text-dark"
-                              : trx.status === "approved"
-                              ? "bg-primary"
-                              : trx.status === "rejected"
-                              ? "bg-danger"
-                              : "bg-secondary"
-                          }`}
-                        >
-                          {trx.status}
-                        </span>
-
-                      </td>
-
-                      <td>{trx.reference || "-"}</td>
-
-                      <td>{trx.description}</td>
-
-                      <td>
-                        {new Date(trx.createdAt).toLocaleString()}
-                      </td>
-
-                    </tr>
-
-                  ))
-
-                )}
-
-              </tbody>
-
-            </table>
-
-          </div>
+</div>
 
         </div>
-
       </div>
-
     </div>
-
   );
-
 }

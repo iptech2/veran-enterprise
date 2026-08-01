@@ -262,13 +262,26 @@
 //   );
 // }
 
-
-
 import { useEffect, useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
+import AdminNavbar from "../components/AdminNavbar";
 import api from "../services/api";
 
 export default function AdminPackages() {
+  // ==========================
+  // MOBILE SIDEBAR
+  // ==========================
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
+
+  // ==========================
+  // STATE
+  // ==========================
+
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -316,10 +329,7 @@ export default function AdminPackages() {
 
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -348,7 +358,6 @@ export default function AdminPackages() {
       }
 
       resetForm();
-
       loadPackages();
     } catch (err) {
       alert(
@@ -386,11 +395,7 @@ export default function AdminPackages() {
   =========================== */
 
   const deletePackage = async (id) => {
-    if (
-      !window.confirm(
-        "Delete this package?"
-      )
-    )
+    if (!window.confirm("Delete this package?"))
       return;
 
     try {
@@ -446,274 +451,336 @@ export default function AdminPackages() {
       isActive: true,
     });
   };
-
-  if (loading) {
+    if (loading) {
     return (
       <div className="d-flex">
-        <AdminSidebar />
 
-        <div className="container-fluid p-5">
-          <h3>Loading packages...</h3>
+        <AdminSidebar
+          isOpen={sidebarOpen}
+          toggleSidebar={toggleSidebar}
+        />
+
+        <div className="flex-grow-1">
+
+          <AdminNavbar
+            toggleSidebar={toggleSidebar}
+          />
+
+          <div className="container-fluid p-5">
+            <h3>Loading packages...</h3>
+          </div>
+
         </div>
+
       </div>
     );
   }
-    return (
+
+  return (
     <div className="d-flex">
-      <AdminSidebar />
 
-      <div className="container-fluid p-4">
+      <AdminSidebar
+        isOpen={sidebarOpen}
+        toggleSidebar={toggleSidebar}
+      />
 
-        <h2 className="mb-4">
-          Package Management
-        </h2>
+      <div className="flex-grow-1 bg-light">
 
-        {/* PACKAGE FORM */}
+        <AdminNavbar
+          toggleSidebar={toggleSidebar}
+        />
 
-        <div className="card shadow mb-4">
-          <div className="card-header">
-            <h4>
-              {editingId ? "Edit Package" : "Create Package"}
-            </h4>
-          </div>
+        <div className="container-fluid p-4">
 
-          <div className="card-body">
+          <h2 className="mb-4 fw-bold">
+            Package Management
+          </h2>
 
-            <form onSubmit={savePackage}>
+          {/* PACKAGE FORM */}
 
-              <div className="row">
+          <div className="card shadow mb-4">
 
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">
-                    Package Name
-                  </label>
+            <div className="card-header">
+              <h4>
+                {editingId ? "Edit Package" : "Create Package"}
+              </h4>
+            </div>
 
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+            <div className="card-body">
 
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">
-                    ROI (%)
-                  </label>
+              <form onSubmit={savePackage}>
 
-                  <input
-                    type="number"
-                    className="form-control"
-                    name="roi"
-                    value={formData.roi}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+                <div className="row">
 
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">
-                    Duration (Days)
-                  </label>
-
-                  <input
-                    type="number"
-                    className="form-control"
-                    name="duration"
-                    value={formData.duration}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">
-                    Minimum Amount
-                  </label>
-
-                  <input
-                    type="number"
-                    className="form-control"
-                    name="minAmount"
-                    value={formData.minAmount}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">
-                    Maximum Amount
-                  </label>
-
-                  <input
-                    type="number"
-                    className="form-control"
-                    name="maxAmount"
-                    value={formData.maxAmount}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">
-                    Description
-                  </label>
-
-                  <textarea
-                    className="form-control"
-                    rows="3"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="col-md-12 mb-3">
-                  <div className="form-check">
-
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      name="isActive"
-                      checked={formData.isActive}
-                      onChange={handleChange}
-                    />
-
-                    <label className="form-check-label">
-                      Package Active
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">
+                      Package Name
                     </label>
 
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">
+                      ROI (%)
+                    </label>
+
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="roi"
+                      value={formData.roi}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">
+                      Duration (Days)
+                    </label>
+
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="duration"
+                      value={formData.duration}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">
+                      Minimum Amount
+                    </label>
+
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="minAmount"
+                      value={formData.minAmount}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">
+                      Maximum Amount
+                    </label>
+
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="maxAmount"
+                      value={formData.maxAmount}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">
+                      Description
+                    </label>
+
+                    <textarea
+                      className="form-control"
+                      rows="3"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="col-12 mb-3">
+
+                    <div className="form-check">
+
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        name="isActive"
+                        checked={formData.isActive}
+                        onChange={handleChange}
+                      />
+
+                      <label className="form-check-label">
+                        Package Active
+                      </label>
+
+                    </div>
+
+                  </div>
+
                 </div>
 
-              </div>
-
-              <button
-                className="btn btn-primary me-2"
-                type="submit"
-              >
-                {editingId ? "Update Package" : "Create Package"}
-              </button>
-
-              {editingId && (
                 <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={resetForm}
+                  className="btn btn-primary me-2"
+                  type="submit"
                 >
-                  Cancel
+                  {editingId
+                    ? "Update Package"
+                    : "Create Package"}
                 </button>
-              )}
 
-            </form>
+                {editingId && (
+
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={resetForm}
+                  >
+                    Cancel
+                  </button>
+
+                )}
+
+              </form>
+
+            </div>
 
           </div>
-        </div>
 
-        {/* PACKAGE TABLE */}
+          {/* PACKAGE TABLE */}
 
-        <div className="card shadow">
+          <div className="card shadow">
 
-          <div className="card-header">
-            <h4>Available Packages</h4>
-          </div>
+            <div className="card-header bg-dark text-white d-flex justify-content-between">
 
-          <div className="table-responsive">
+              <strong>Available Packages</strong>
 
-            <table className="table table-hover align-middle">
+              <span className="badge bg-light text-dark">
+                {packages.length} Packages
+              </span>
 
-              <thead className="table-dark">
-                <tr>
-                  <th>Name</th>
-                  <th>ROI</th>
-                  <th>Duration</th>
-                  <th>Min</th>
-                  <th>Max</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
+            </div>
 
-              <tbody>
+            <div className="table-responsive">
 
-                {packages.length === 0 ? (
+              <table className="table table-hover align-middle mb-0">
+
+                <thead className="table-dark">
+
                   <tr>
-                    <td colSpan="7" className="text-center">
-                      No packages found.
-                    </td>
+                    <th>Name</th>
+                    <th>ROI</th>
+                    <th>Duration</th>
+                    <th>Min</th>
+                    <th>Max</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                ) : (
-                  packages.map((pkg) => (
-                    <tr key={pkg._id}>
 
-                      <td>{pkg.name}</td>
+                </thead>
 
-                      <td>{pkg.roi}%</td>
+                <tbody>
 
-                      <td>{pkg.duration} Days</td>
+                  {packages.length === 0 ? (
 
-                      <td>KES {pkg.minAmount}</td>
+                    <tr>
 
-                      <td>KES {pkg.maxAmount}</td>
-
-                      <td>
-                        <span
-                          className={
-                            pkg.isActive
-                              ? "badge bg-success"
-                              : "badge bg-danger"
-                          }
-                        >
-                          {pkg.isActive ? "Active" : "Inactive"}
-                        </span>
-                      </td>
-
-                      <td>
-
-                        <button
-                          className="btn btn-warning btn-sm me-2"
-                          onClick={() => editPackage(pkg)}
-                        >
-                          Edit
-                        </button>
-
-                        <button
-                          className={
-                            pkg.isActive
-                              ? "btn btn-secondary btn-sm me-2"
-                              : "btn btn-success btn-sm me-2"
-                          }
-                          onClick={() => toggleStatus(pkg)}
-                        >
-                          {pkg.isActive ? "Deactivate" : "Activate"}
-                        </button>
-
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => deletePackage(pkg._id)}
-                        >
-                          Delete
-                        </button>
-
+                      <td colSpan="7" className="text-center">
+                        No packages found.
                       </td>
 
                     </tr>
-                  ))
-                )}
 
-              </tbody>
+                  ) : (
 
-            </table>
+                    packages.map((pkg) => (
+
+                      <tr key={pkg._id}>
+
+                        <td>{pkg.name}</td>
+
+                        <td>{pkg.roi}%</td>
+
+                        <td>{pkg.duration} Days</td>
+
+                        <td>
+                          KES {pkg.minAmount.toLocaleString()}
+                        </td>
+
+                        <td>
+                          KES {pkg.maxAmount.toLocaleString()}
+                        </td>
+
+                        <td>
+
+                          <span
+                            className={
+                              pkg.isActive
+                                ? "badge bg-success"
+                                : "badge bg-danger"
+                            }
+                          >
+                            {pkg.isActive
+                              ? "Active"
+                              : "Inactive"}
+                          </span>
+
+                        </td>
+
+                        <td>
+
+                          <button
+                            className="btn btn-warning btn-sm me-2"
+                            onClick={() => editPackage(pkg)}
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            className={
+                              pkg.isActive
+                                ? "btn btn-secondary btn-sm me-2"
+                                : "btn btn-success btn-sm me-2"
+                            }
+                            onClick={() => toggleStatus(pkg)}
+                          >
+                            {pkg.isActive
+                              ? "Deactivate"
+                              : "Activate"}
+                          </button>
+
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() =>
+                              deletePackage(pkg._id)
+                            }
+                          >
+                            Delete
+                          </button>
+
+                        </td>
+
+                      </tr>
+
+                    ))
+
+                  )}
+
+                </tbody>
+
+              </table>
+
+            </div>
 
           </div>
 
         </div>
 
       </div>
+
     </div>
   );
 }

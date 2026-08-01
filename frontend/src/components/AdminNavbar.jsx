@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { FaBars } from "react-icons/fa";
 
 export default function AdminNavbar({ toggleSidebar }) {
   const navigate = useNavigate();
@@ -19,11 +20,11 @@ export default function AdminNavbar({ toggleSidebar }) {
         {/* Mobile Menu Button */}
 
         <button
-          className="btn btn-outline-dark d-lg-none me-3"
-          onClick={toggleSidebar}
-        >
-          ☰
-        </button>
+  className="btn btn-outline-dark d-lg-none me-3"
+  onClick={toggleSidebar}
+>
+  <FaBars />
+</button>
 
         {/* Logo */}
 
