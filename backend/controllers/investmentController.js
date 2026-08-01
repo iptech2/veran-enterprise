@@ -76,8 +76,17 @@ exports.createInvestment = async (req, res) => {
     }
 
     // Deduct wallet
-    user.balance -= investAmount;
-    await user.save();
+    // user.balance -= investAmount;
+    // await user.save();
+    
+    // Deduct wallet
+user.balance -= investAmount;
+
+// Update statistics
+user.totalInvested += investAmount;
+user.lastInvestment = new Date();
+
+await user.save();
 
     // Calculate profit
     const profit = (investAmount * roi) / 100;

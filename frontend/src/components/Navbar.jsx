@@ -1,10 +1,13 @@
+// import { useState } from "react";
 // import { Link, useNavigate } from "react-router-dom";
 
 // export default function Navbar() {
 //   const navigate = useNavigate();
 
+//   const [menuOpen, setMenuOpen] = useState(false);
+
 //   const token = localStorage.getItem("token");
-//   const user = JSON.parse(localStorage.getItem("user"));
+//   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
 //   const logout = () => {
 //     localStorage.removeItem("token");
@@ -12,424 +15,719 @@
 //     navigate("/");
 //   };
 
+//   const closeMenu = () => setMenuOpen(false);
+
 //   return (
-//     <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-//       <div className="container">
+//     <>
+//       {/* Overlay */}
 
-//         <Link
-//           className="navbar-brand fw-bold"
-//           to={user?.role === "admin" ? "/admin" : "/dashboard"}
-//         >
-//           Veran Enterprise
-//         </Link>
-
-//         <button
-//           className="navbar-toggler"
-//           type="button"
-//           data-bs-toggle="collapse"
-//           data-bs-target="#navbarNav"
-//         >
-//           <span className="navbar-toggler-icon"></span>
-//         </button>
-
+//       {menuOpen && (
 //         <div
-//           className="collapse navbar-collapse"
-//           id="navbarNav"
-//         >
-//           <ul className="navbar-nav ms-auto">
+//           onClick={closeMenu}
+//           style={{
+//             position: "fixed",
+//             inset: 0,
+//             background: "rgba(0,0,0,.45)",
+//             zIndex: 1040,
+//           }}
+//         />
+//       )}
+
+//       <nav className="navbar navbar-dark bg-dark shadow-sm">
+
+//         <div className="container-fluid px-3">
+
+//           <Link
+//             className="navbar-brand fw-bold"
+//             to={user.role === "admin" ? "/admin" : "/dashboard"}
+//           >
+//             Veran Enterprise
+//           </Link>
+
+//           {token && (
+//             <button
+//               className="btn btn-outline-light d-lg-none"
+//               onClick={() => setMenuOpen(!menuOpen)}
+//             >
+//               ☰
+//             </button>
+//           )}
+
+//           {/* Desktop Menu */}
+
+//           <div className="d-none d-lg-flex align-items-center">
 
 //             {!token ? (
 //               <>
-//                 <li className="nav-item">
-//                   <Link className="nav-link" to="/">
-//                     Login
-//                   </Link>
-//                 </li>
+//                 <Link className="nav-link text-white" to="/">
+//                   Login
+//                 </Link>
 
-//                 <li className="nav-item">
-//                   <Link className="nav-link" to="/register">
-//                     Register
-//                   </Link>
-//                 </li>
+//                 <Link className="nav-link text-white" to="/register">
+//                   Register
+//                 </Link>
 //               </>
 //             ) : (
 //               <>
-//                 {/* USER LINKS */}
-
-//                 <li className="nav-item">
-//                   <Link className="nav-link" to="/dashboard">
-//                     Dashboard
-//                   </Link>
-//                 </li>
-
-//                 <li className="nav-item">
-//                   <Link className="nav-link" to="/wallet">
-//                     Wallet
-//                   </Link>
-//                 </li>
-
-//                 <li className="nav-item">
-//                   <Link className="nav-link" to="/withdraw">
-//                     Withdraw
-//                   </Link>
-//                 </li>
-
-//                 <li className="nav-item">
-//                   <Link className="nav-link" to="/transactions">
-//                     Transactions
-//                   </Link>
-//                 </li>
-
-//                 <li className="nav-item">
-//                   <Link className="nav-link" to="/referrals">
-//                     🎁 Referrals
-//                   </Link>
-//                 </li>
-//                 <li className="nav-item">
-//        <Link className="nav-link" to="/profile">
-//     👤 Profile
-//   </Link>
-// </li>
-
-//                 {/* ADMIN LINKS */}
-
-//                 {/* {user?.role === "admin" && (
+//                 {user.role === "admin" ? (
 //                   <>
-//                     <li className="nav-item">
-//                       <Link
-//                         className="nav-link text-warning fw-bold"
-//                         to="/admin"
-//                       >
-//                         Admin Dashboard
-//                       </Link>
-//                     </li>
-
-//                     <li className="nav-item">
-//                       <Link
-//                         className="nav-link text-warning"
-//                         to="/admin/packages"
-//                       >
-//                         Packages
-//                       </Link>
-//                     </li>
-
-//                     <li className="nav-item">
-//                       <Link
-//                         className="nav-link text-warning"
-//                         to="/admin/users"
-//                       >
-//                         Users
-//                       </Link>
-//                     </li>
-
-//                     <li className="nav-item">
-//                       <Link
-//                         className="nav-link text-warning"
-//                         to="/admin/investments"
-//                       >
-//                         Investments
-//                       </Link>
-//                     </li>
-
-//                     <li className="nav-item">
-//                       <Link
-//                         className="nav-link text-warning"
-//                         to="/admin/transactions"
-//                       >
-//                         Transactions
-//                       </Link>
-//                     </li>
-
-//                     <li className="nav-item">
-//                       <Link
-//                         className="nav-link text-warning"
-//                         to="/admin/withdrawals"
-//                       >
-//                         Withdrawals
-//                       </Link>
-//                     </li>
+//                     <Link className="nav-link text-white" to="/admin">Dashboard</Link>
+//                     <Link className="nav-link text-white" to="/admin/users">Users</Link>
+//                     <Link className="nav-link text-white" to="/admin/packages">Packages</Link>
+//                     <Link className="nav-link text-white" to="/admin/investments">Investments</Link>
+//                     <Link className="nav-link text-white" to="/admin/deposits">Deposits</Link>
+//                     <Link className="nav-link text-white" to="/admin/withdrawals">Withdrawals</Link>
+//                     <Link className="nav-link text-white" to="/admin/transactions">Transactions</Link>
+//                     <Link className="nav-link text-white" to="/admin/referrals">Referrals</Link>
+//                     <Link className="nav-link text-white" to="/admin/profile">Profile</Link>
 //                   </>
-//                 )} */}
+//                 ) : (
+//                   <>
+//                     <Link className="nav-link text-white" to="/dashboard">Dashboard</Link>
+//                     <Link className="nav-link text-white" to="/wallet">Wallet</Link>
+//                     <Link className="nav-link text-white" to="/withdraw">Withdraw</Link>
+//                     <Link className="nav-link text-white" to="/transactions">Transactions</Link>
+//                     <Link className="nav-link text-white" to="/referrals">Referrals</Link>
+//                     <Link className="nav-link text-white" to="/profile">Profile</Link>
+//                   </>
+//                 )}
 
-//                 <>
-//   {user?.role === "admin" ? (
-//     <>
-//       <li className="nav-item">
-//         <Link className="nav-link" to="/admin">
-//           📊 Dashboard
-//         </Link>
-//       </li>
-
-//       <li className="nav-item">
-//         <Link className="nav-link" to="/admin/users">
-//           👥 Users
-//         </Link>
-//       </li>
-
-//       <li className="nav-item">
-//         <Link className="nav-link" to="/admin/packages">
-//           📦 Packages
-//         </Link>
-//       </li>
-
-//       <li className="nav-item">
-//         <Link className="nav-link" to="/admin/investments">
-//           💼 Investments
-//         </Link>
-//       </li>
-
-//       <li className="nav-item">
-//         <Link className="nav-link" to="/admin/deposits">
-//           💳 Deposits
-//         </Link>
-//       </li>
-
-//       <li className="nav-item">
-//         <Link className="nav-link" to="/admin/withdrawals">
-//           💸 Withdrawals
-//         </Link>
-//       </li>
-
-//       <li className="nav-item">
-//         <Link className="nav-link" to="/admin/transactions">
-//           📜 Transactions
-//         </Link>
-//       </li>
-
-//       <li className="nav-item">
-//         <Link className="nav-link" to="/admin/referrals">
-//           🎁 Referrals
-//         </Link>
-//       </li>
-//     </>
-//   ) : (
-//     <>
-//       <li className="nav-item">
-//         <Link className="nav-link" to="/dashboard">
-//           🏠 Dashboard
-//         </Link>
-//       </li>
-
-//       <li className="nav-item">
-//         <Link className="nav-link" to="/wallet">
-//           💰 Wallet
-//         </Link>
-//       </li>
-
-//       <li className="nav-item">
-//         <Link className="nav-link" to="/withdraw">
-//           💸 Withdraw
-//         </Link>
-//       </li>
-
-//       <li className="nav-item">
-//         <Link className="nav-link" to="/transactions">
-//           📜 Transactions
-//         </Link>
-//       </li>
-
-//       <li className="nav-item">
-//         <Link className="nav-link" to="/referrals">
-//           🎁 Referrals
-//         </Link>
-//       </li>
-
-//       <li className="nav-item">
-//         <Link className="nav-link" to="/profile">
-//           👤 Profile
-//         </Link>
-//       </li>
-//     </>
-//   )}
-
-//   <li className="nav-item ms-lg-3">
-//     <button
-//       className="btn btn-danger btn-sm"
-//       onClick={logout}
-//     >
-//       Logout
-//     </button>
-//   </li>
-// </>
-
-//                 {/* <li className="nav-item ms-lg-3">
-//                   <button
-//                     className="btn btn-danger btn-sm"
-//                     onClick={logout}
-//                   >
-//                     Logout
-//                   </button>
-//                 </li> */}
+//                 <button
+//                   className="btn btn-danger btn-sm ms-3"
+//                   onClick={logout}
+//                 >
+//                   Logout
+//                 </button>
 //               </>
 //             )}
 
-//           </ul>
+//           </div>
+
 //         </div>
+//       </nav>
+
+//       {/* Mobile Sidebar */}
+
+//       <div
+//         className="bg-dark text-white"
+//         style={{
+//           position: "fixed",
+//           top: 0,
+//           left: 0,
+//           width: "260px",
+//           height: "100vh",
+//           zIndex: 1050,
+//           transform: menuOpen
+//             ? "translateX(0)"
+//             : "translateX(-100%)",
+//           transition: ".3s",
+//           overflowY: "auto",
+//         }}
+//       >
+
+//         <div className="p-4 border-bottom">
+
+//           <h4 className="fw-bold">
+//             Veran Enterprise
+//           </h4>
+
+//         </div>
+
+//         <div className="nav flex-column p-3">
+
+//           {!token ? (
+//             <>
+//               <Link className="nav-link text-white" to="/" onClick={closeMenu}>
+//                 Login
+//               </Link>
+
+//               <Link className="nav-link text-white" to="/register" onClick={closeMenu}>
+//                 Register
+//               </Link>
+//             </>
+//           ) : (
+//             <>
+//               {user.role === "admin" ? (
+//                 <>
+//                   <Link className="nav-link text-white" to="/admin" onClick={closeMenu}>📊 Dashboard</Link>
+//                   <Link className="nav-link text-white" to="/admin/users" onClick={closeMenu}>👥 Users</Link>
+//                   <Link className="nav-link text-white" to="/admin/packages" onClick={closeMenu}>📦 Packages</Link>
+//                   <Link className="nav-link text-white" to="/admin/investments" onClick={closeMenu}>💰 Investments</Link>
+//                   <Link className="nav-link text-white" to="/admin/deposits" onClick={closeMenu}>💳 Deposits</Link>
+//                   <Link className="nav-link text-white" to="/admin/withdrawals" onClick={closeMenu}>🏦 Withdrawals</Link>
+//                   <Link className="nav-link text-white" to="/admin/transactions" onClick={closeMenu}>📜 Transactions</Link>
+//                   <Link className="nav-link text-white" to="/admin/referrals" onClick={closeMenu}>🎁 Referrals</Link>
+//                   <Link className="nav-link text-white" to="/admin/profile" onClick={closeMenu}>👤 Profile</Link>
+//                 </>
+//               ) : (
+//                 <>
+//                   <Link className="nav-link text-white" to="/dashboard" onClick={closeMenu}>🏠 Dashboard</Link>
+//                   <Link className="nav-link text-white" to="/wallet" onClick={closeMenu}>💰 Wallet</Link>
+//                   <Link className="nav-link text-white" to="/withdraw" onClick={closeMenu}>💸 Withdraw</Link>
+//                   <Link className="nav-link text-white" to="/transactions" onClick={closeMenu}>📜 Transactions</Link>
+//                   <Link className="nav-link text-white" to="/referrals" onClick={closeMenu}>🎁 Referrals</Link>
+//                   <Link className="nav-link text-white" to="/profile" onClick={closeMenu}>👤 Profile</Link>
+//                 </>
+//               )}
+
+//               <button
+//                 className="btn btn-danger mt-4"
+//                 onClick={logout}
+//               >
+//                 Logout
+//               </button>
+//             </>
+//           )}
+
+//         </div>
+
 //       </div>
-//     </nav>
+//     </>
 //   );
 // }
 
-
-
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import {
+  FaBars,
+  FaHome,
+  FaWallet,
+  FaMoneyBillWave,
+  FaHistory,
+  FaGift,
+  FaUser,
+  FaUsers,
+  FaBox,
+  FaChartLine,
+  FaCreditCard,
+  FaUniversity,
+  FaReceipt,
+  FaSignOutAlt,
+  FaSignInAlt,
+  FaUserPlus,
+  FaBuilding
+} from "react-icons/fa";
+
+
 export default function Navbar() {
+
   const navigate = useNavigate();
 
+  const [menuOpen, setMenuOpen] = useState(false);
+
+
   const token = localStorage.getItem("token");
+
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
+
   const logout = () => {
+
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+
     navigate("/");
+
   };
 
+
+  const closeMenu = () => setMenuOpen(false);
+
+
+
+  const adminLinks = [
+
+    {
+      name:"Dashboard",
+      path:"/admin",
+      icon:<FaChartLine/>
+    },
+
+    {
+      name:"Users",
+      path:"/admin/users",
+      icon:<FaUsers/>
+    },
+
+    {
+      name:"Packages",
+      path:"/admin/packages",
+      icon:<FaBox/>
+    },
+
+    {
+      name:"Investments",
+      path:"/admin/investments",
+      icon:<FaMoneyBillWave/>
+    },
+
+    {
+      name:"Deposits",
+      path:"/admin/deposits",
+      icon:<FaCreditCard/>
+    },
+
+    {
+      name:"Withdrawals",
+      path:"/admin/withdrawals",
+      icon:<FaUniversity/>
+    },
+
+    {
+      name:"Transactions",
+      path:"/admin/transactions",
+      icon:<FaReceipt/>
+    },
+
+    {
+      name:"Referrals",
+      path:"/admin/referrals",
+      icon:<FaGift/>
+    },
+
+    {
+      name:"Profile",
+      path:"/admin/profile",
+      icon:<FaUser/>
+    }
+
+  ];
+
+
+
+  const userLinks = [
+
+    {
+      name:"Dashboard",
+      path:"/dashboard",
+      icon:<FaHome/>
+    },
+
+    {
+      name:"Wallet",
+      path:"/wallet",
+      icon:<FaWallet/>
+    },
+
+    {
+      name:"Withdraw",
+      path:"/withdraw",
+      icon:<FaMoneyBillWave/>
+    },
+
+    {
+      name:"Transactions",
+      path:"/transactions",
+      icon:<FaHistory/>
+    },
+
+    {
+      name:"Referrals",
+      path:"/referrals",
+      icon:<FaGift/>
+    },
+
+    {
+      name:"Profile",
+      path:"/profile",
+      icon:<FaUser/>
+    }
+
+  ];
+
+
+
+  const links = user.role === "admin"
+    ? adminLinks
+    : userLinks;
+
+
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-      <div className="container">
 
-        <Link
-          className="navbar-brand fw-bold"
-          to={user.role === "admin" ? "/admin" : "/dashboard"}
-        >
-          Veran Enterprise
-        </Link>
+    <>
 
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
 
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav ms-auto">
+      {/* Overlay */}
 
-            {!token ? (
-              <>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/">
-                    Login
-                  </Link>
-                </li>
+      {
+        menuOpen && (
 
-                <li className="nav-item">
-                  <Link className="nav-link" to="/register">
-                    Register
-                  </Link>
-                </li>
-              </>
-            ) : (
-              <>
-                {user.role === "admin" ? (
-                  <>
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/admin">
-                        📊 Dashboard
-                      </Link>
-                    </li>
+          <div
 
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/admin/users">
-                        👥 Users
-                      </Link>
-                    </li>
+            onClick={closeMenu}
 
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/admin/packages">
-                        📦 Packages
-                      </Link>
-                    </li>
+            style={{
 
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/admin/investments">
-                        💼 Investments
-                      </Link>
-                    </li>
+              position:"fixed",
 
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/admin/deposits">
-                        💳 Deposits
-                      </Link>
-                    </li>
+              inset:0,
 
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/admin/withdrawals">
-                        💸 Withdrawals
-                      </Link>
-                    </li>
+              background:"rgba(0,0,0,.45)",
 
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/admin/transactions">
-                        📜 Transactions
-                      </Link>
-                    </li>
+              zIndex:1040
 
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/admin/referrals">
-                        🎁 Referrals
-                      </Link>
-                    </li>
-                  </>
-                ) : (
-                  <>
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/dashboard">
-                        🏠 Dashboard
-                      </Link>
-                    </li>
+            }}
 
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/wallet">
-                        💰 Wallet
-                      </Link>
-                    </li>
+          />
 
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/withdraw">
-                        💸 Withdraw
-                      </Link>
-                    </li>
+        )
+      }
 
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/transactions">
-                        📜 Transactions
-                      </Link>
-                    </li>
 
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/referrals">
-                        🎁 Referrals
-                      </Link>
-                    </li>
 
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/profile">
-                        👤 Profile
-                      </Link>
-                    </li>
-                  </>
-                )}
+      <nav className="navbar navbar-dark bg-dark shadow-sm">
 
-                <li className="nav-item ms-lg-3">
-                  <button
-                    className="btn btn-danger btn-sm"
-                    onClick={logout}
-                  >
-                    Logout
-                  </button>
-                </li>
-              </>
-            )}
 
-          </ul>
+        <div className="container-fluid px-3">
+
+
+          <Link
+
+            className="navbar-brand fw-bold d-flex align-items-center gap-2"
+
+            to={
+              user.role === "admin"
+              ? "/admin"
+              : "/dashboard"
+            }
+
+          >
+
+            <FaBuilding/>
+
+            Veran Enterprise
+
+          </Link>
+
+
+
+
+
+          {
+            token && (
+
+              <button
+
+                className="btn btn-outline-light d-lg-none"
+
+                onClick={()=>setMenuOpen(!menuOpen)}
+
+              >
+
+                <FaBars/>
+
+              </button>
+
+            )
+          }
+
+
+
+
+
+          {/* Desktop Menu */}
+
+
+          <div className="d-none d-lg-flex align-items-center gap-2">
+
+
+          {
+
+          !token ?
+
+          (
+
+            <>
+
+
+            <Link
+
+              className="btn btn-outline-light btn-sm d-flex align-items-center gap-2 px-3"
+
+              to="/"
+
+            >
+
+              <FaSignInAlt/>
+
+              Login
+
+            </Link>
+
+
+
+            <Link
+
+              className="btn btn-primary btn-sm d-flex align-items-center gap-2 px-3"
+
+              to="/register"
+
+            >
+
+              <FaUserPlus/>
+
+              Register
+
+            </Link>
+
+
+            </>
+
+
+          )
+
+          :
+
+          (
+
+            <>
+
+
+            {
+              links.map((item,index)=>(
+
+                <Link
+
+                  key={index}
+
+                  className="text-white text-decoration-none d-flex align-items-center gap-2 px-2 py-2 rounded"
+
+                  style={{
+                    fontSize:"14px"
+                  }}
+
+                  to={item.path}
+
+                >
+
+                  {item.icon}
+
+                  {item.name}
+
+                </Link>
+
+              ))
+            }
+
+
+
+            <button
+
+              className="btn btn-danger btn-sm d-flex align-items-center gap-2 ms-2"
+
+              onClick={logout}
+
+            >
+
+              <FaSignOutAlt/>
+
+              Logout
+
+            </button>
+
+
+            </>
+
+          )
+
+          }
+
+
+          </div>
+
+
         </div>
 
+
+      </nav>
+
+
+
+
+
+
+
+      {/* Mobile Sidebar */}
+
+
+      <div
+
+        className="bg-dark text-white"
+
+        style={{
+
+          position:"fixed",
+
+          top:0,
+
+          left:0,
+
+          width:"260px",
+
+          height:"100vh",
+
+          zIndex:1050,
+
+          transform:
+
+          menuOpen
+
+          ?
+
+          "translateX(0)"
+
+          :
+
+          "translateX(-100%)",
+
+
+          transition:".3s",
+
+          overflowY:"auto"
+
+        }}
+
+      >
+
+
+
+        <div className="p-4 border-bottom">
+
+
+          <h4 className="fw-bold d-flex align-items-center gap-2">
+
+            <FaBuilding/>
+
+            Veran Enterprise
+
+          </h4>
+
+
+        </div>
+
+
+
+
+
+        <div className="nav flex-column p-3">
+
+
+        {
+
+        !token ?
+
+        (
+
+          <>
+
+
+          <Link
+
+            className="nav-link text-white d-flex gap-3 align-items-center"
+
+            to="/"
+
+            onClick={closeMenu}
+
+          >
+
+            <FaSignInAlt/>
+
+            Login
+
+          </Link>
+
+
+
+          <Link
+
+            className="nav-link text-white d-flex gap-3 align-items-center"
+
+            to="/register"
+
+            onClick={closeMenu}
+
+          >
+
+            <FaUserPlus/>
+
+            Register
+
+          </Link>
+
+
+          </>
+
+        )
+
+        :
+
+        (
+
+          <>
+
+
+          {
+
+            links.map((item,index)=>(
+
+              <Link
+
+                key={index}
+
+                className="nav-link text-white d-flex gap-3 align-items-center mb-2"
+
+                to={item.path}
+
+                onClick={closeMenu}
+
+              >
+
+                {item.icon}
+
+                {item.name}
+
+              </Link>
+
+            ))
+
+          }
+
+
+
+          <button
+
+            className="btn btn-danger mt-4 d-flex justify-content-center align-items-center gap-2"
+
+            onClick={logout}
+
+          >
+
+            <FaSignOutAlt/>
+
+            Logout
+
+          </button>
+
+
+          </>
+
+        )
+
+        }
+
+
+        </div>
+
+
       </div>
-    </nav>
+
+
+
+    </>
+
   );
+
 }

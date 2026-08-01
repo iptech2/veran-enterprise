@@ -60,11 +60,14 @@ router.post("/callback", async (req, res) => {
           ResultDesc: "User not found",
         });
       }
+// Credit wallet
+user.balance += Number(amount);
 
-      // Credit wallet
-      user.balance += Number(amount);
+// Update user statistics
+user.totalDeposited += Number(amount);
 
-      await user.save();
+await user.save();
+      
 
       // Update transaction
       transaction.status = "completed";

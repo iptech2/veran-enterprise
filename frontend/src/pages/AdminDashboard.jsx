@@ -11,6 +11,9 @@ export default function AdminDashboard() {
   const [withdrawals, setWithdrawals] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+const toggleSidebar = () => { setSidebarOpen(!sidebarOpen);};
+
   /* ===========================
       LOAD DASHBOARD
   =========================== */
@@ -70,11 +73,15 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="d-flex">
-        <AdminSidebar />
+        {/* <AdminSidebar /> */}
+        <AdminSidebar
+    isOpen={sidebarOpen}
+    toggleSidebar={toggleSidebar}
+/>
 
         <div className="flex-grow-1">
 
-          <AdminNavbar />
+            <AdminNavbar toggleSidebar={toggleSidebar} />
 
           <div className="container-fluid p-5">
             <h3>Loading Admin Dashboard...</h3>

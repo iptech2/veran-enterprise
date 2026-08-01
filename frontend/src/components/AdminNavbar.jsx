@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-export default function AdminNavbar() {
+export default function AdminNavbar({ toggleSidebar }) {
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -12,11 +12,23 @@ export default function AdminNavbar() {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4">
+    <nav className="navbar navbar-light bg-white shadow-sm px-3">
 
       <div className="container-fluid">
 
+        {/* Mobile Menu Button */}
+
+        <button
+          className="btn btn-outline-dark d-lg-none me-3"
+          onClick={toggleSidebar}
+        >
+          ☰
+        </button>
+
+        {/* Logo */}
+
         <div>
+
           <h4 className="fw-bold mb-0">
             Veran Enterprise
           </h4>
@@ -24,11 +36,14 @@ export default function AdminNavbar() {
           <small className="text-muted">
             Admin Control Panel
           </small>
+
         </div>
 
-        <div className="d-flex align-items-center">
+        {/* Right Side */}
 
-          <div className="text-end me-3">
+        <div className="d-flex align-items-center ms-auto">
+
+          <div className="text-end me-3 d-none d-md-block">
 
             <div className="fw-semibold">
               {user.fullName || user.name || "Administrator"}
@@ -41,7 +56,7 @@ export default function AdminNavbar() {
           </div>
 
           <button
-            className="btn btn-outline-danger"
+            className="btn btn-danger btn-sm"
             onClick={logout}
           >
             Logout

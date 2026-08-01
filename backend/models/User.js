@@ -1,3 +1,107 @@
+// const mongoose = require("mongoose");
+
+// const UserSchema = new mongoose.Schema(
+//   {
+//     fullName: {
+//       type: String,
+//       required: true,
+//       trim: true,
+//     },
+
+//     email: {
+//       type: String,
+//       required: true,
+//       unique: true,
+//       lowercase: true,
+//     },
+
+//     phone: {
+//       type: String,
+//       required: true,
+//     },
+
+//     profilePhoto: {
+//     type: String,
+//     default: "",
+//     },
+
+//     password: {
+//       type: String,
+//       required: true,
+//     },
+
+//     role: {
+//       type: String,
+//       enum: ["user", "admin"],
+//       default: "user",
+//     },
+
+//     balance: {
+//       type: Number,
+//       default: 0,
+//     },
+
+//     isVerified: {
+//       type: Boolean,
+//       default: false,
+//     },
+
+//     emailVerificationToken: {
+//       type: String,
+//       default: null,
+//     },
+
+//     passwordResetToken: {
+//       type: String,
+//       default: null,
+//     },
+
+//     passwordResetExpires: {
+//       type: Date,
+//       default: null,
+//     },
+
+//     // =============================
+//     // REFERRAL SYSTEM
+//     // =============================
+
+//     referralCode: {
+//       type: String,
+//       unique: true,
+//       sparse: true,
+//     },
+
+//     referredBy: {
+//       type: mongoose.Schema.Types.ObjectId,
+//       ref: "User",
+//       default: null,
+//     },
+
+//     // Prevents paying referral bonus twice
+//     referralRewardPaid: {
+//       type: Boolean,
+//       default: false,
+//     },
+
+//     // Total referral commissions earned
+//     referralEarnings: {
+//       type: Number,
+//       default: 0,
+//     },
+
+//     // Number of successful referrals
+//     referralCount: {
+//       type: Number,
+//       default: 0,
+//     },
+//   },
+//   {
+//     timestamps: true,
+//   }
+// );
+
+// module.exports = mongoose.model("User", UserSchema);
+
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema(
@@ -21,8 +125,8 @@ const UserSchema = new mongoose.Schema(
     },
 
     profilePhoto: {
-    type: String,
-    default: "",
+      type: String,
+      default: "",
     },
 
     password: {
@@ -36,15 +140,29 @@ const UserSchema = new mongoose.Schema(
       default: "user",
     },
 
-    balance: {
-      type: Number,
-      default: 0,
+    /* ==========================
+       ACCOUNT STATUS
+    ========================== */
+
+    status: {
+      type: String,
+      enum: ["active", "suspended", "blocked"],
+      default: "active",
     },
 
     isVerified: {
       type: Boolean,
       default: false,
     },
+
+    balance: {
+      type: Number,
+      default: 0,
+    },
+
+    /* ==========================
+       EMAIL
+    ========================== */
 
     emailVerificationToken: {
       type: String,
@@ -61,9 +179,9 @@ const UserSchema = new mongoose.Schema(
       default: null,
     },
 
-    // =============================
-    // REFERRAL SYSTEM
-    // =============================
+    /* ==========================
+       REFERRAL SYSTEM
+    ========================== */
 
     referralCode: {
       type: String,
@@ -77,22 +195,77 @@ const UserSchema = new mongoose.Schema(
       default: null,
     },
 
-    // Prevents paying referral bonus twice
     referralRewardPaid: {
       type: Boolean,
       default: false,
     },
 
-    // Total referral commissions earned
     referralEarnings: {
       type: Number,
       default: 0,
     },
 
-    // Number of successful referrals
     referralCount: {
       type: Number,
       default: 0,
+    },
+
+    /* ==========================
+       USER STATISTICS
+    ========================== */
+
+    totalDeposited: {
+      type: Number,
+      default: 0,
+    },
+
+    totalWithdrawn: {
+      type: Number,
+      default: 0,
+    },
+
+    totalInvested: {
+      type: Number,
+      default: 0,
+    },
+
+    totalProfitEarned: {
+      type: Number,
+      default: 0,
+    },
+
+    /* ==========================
+       ACTIVITY
+    ========================== */
+
+    lastLogin: {
+      type: Date,
+      default: null,
+    },
+
+    lastInvestment: {
+      type: Date,
+      default: null,
+    },
+
+    lastWithdrawal: {
+      type: Date,
+      default: null,
+    },
+
+    /* ==========================
+       SETTINGS
+    ========================== */
+
+    notificationsEnabled: {
+      type: Boolean,
+      default: true,
+    },
+
+    kycStatus: {
+      type: String,
+      enum: ["pending", "verified", "rejected"],
+      default: "pending",
     },
   },
   {
