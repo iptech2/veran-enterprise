@@ -110,7 +110,7 @@ exports.initiatePayment = async (req, res) => {
       amount,
       reference,
     });
-
+ console.log("Reference before stkPush:", reference);
     // Send STK Push
     const response = await stkPush(
       phone,
