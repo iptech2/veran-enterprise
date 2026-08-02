@@ -168,7 +168,7 @@ export default function Wallet() {
           </div>
 
           <hr />
-
+{/* 
           <h5>Withdraw</h5>
 
           <button
@@ -176,7 +176,7 @@ export default function Wallet() {
             onClick={withdraw}
           >
             Request Withdrawal
-          </button>
+          </button> */}
 
         </div>
 
