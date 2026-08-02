@@ -237,10 +237,14 @@ const getToken = async () => {
 
 
 
+// exports.stkPush = async (phone, amount, reference) => {
+
+//   try {
 exports.stkPush = async (phone, amount, reference) => {
 
-  try {
+    console.log("REFERENCE RECEIVED:", reference);
 
+    try {
 
     // ADD DEBUG HERE 👇
     console.log("====== MPESA DEBUG ======");
