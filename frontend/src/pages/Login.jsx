@@ -85,6 +85,9 @@ export default function Login() {
     Forgot Password?
   </Link>
 </div>
+    <div className="text-center mt-3">
+  <Link to="/register"> Sign  up  </Link>
+</div>
           </form>
         </div>
       </div>

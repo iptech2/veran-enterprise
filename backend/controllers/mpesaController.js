@@ -1,237 +1,162 @@
-// const { stkPush } = require("../services/mpesa");
 // const crypto = require("crypto");
+// exports.initiatePayment = async (req,res)=>{
+// try{
+// let {phone, amount}=req.body;
 
-// exports.initiatePayment = async (req, res) => {
-//   try {
-//     let { phone, amount } = req.body;
+// if(phone.startsWith("0")){
+//  phone="254"+phone.substring(1);
+// }
+// const reference =
+// "DEP-" + crypto.randomBytes(4).toString("hex");
 
-//     if (!phone || !amount) {
-//       return res.status(400).json({
-//         message: "Phone and amount required",
-//       });
-//     }
 
-//     // format phone (2547XXXXXXXX)
-//     if (phone.startsWith("0")) {
-//       phone = "254" + phone.substring(1);
-//     }
+// const response =
+// await stkPush(
+//  phone,
+//  amount,
+//  reference
+// );
 
-//     const reference = crypto.randomBytes(6).toString("hex");
 
-//     const response = await stkPush(phone, amount, reference);
+// const transaction =
+// await Transaction.create({
 
-//     res.json({
-//       message: "STK Push sent",
-//       data: response,
-//       reference,
-//     });
-//   } catch (err) {
-//     res.status(500).json({
-//       message: err.message,
-//     });
-//   }
+//  user:req.user._id,
+
+//  type:"deposit",
+
+//  amount:Number(amount),
+
+//  phone,
+
+//  checkoutRequestID:
+//  response.CheckoutRequestID,
+
+//  status:"pending",
+
+//  description:
+//  "M-Pesa Deposit",
+
+//  reference
+
+// });
+
+
+// res.json({
+
+// message:"STK Push sent",
+
+// data:response,
+
+// transactionId:transaction._id
+
+// });
+
+
+// }catch(err){
+
+// console.log(err);
+
+// res.status(500).json({
+// message:err.message
+// });
+
+// }
+
 // };
 
-
-// const { stkPush } = require("../services/mpesa");
-// const crypto = require("crypto");
-
-// const Transaction = require("../models/Transaction");
-
-
-// exports.initiatePayment = async (req, res) => {
-
-//   try {
-
-//     let { phone, amount } = req.body;
-
-
-//     if (!phone || !amount) {
-
-//       return res.status(400).json({
-//         message: "Phone and amount required"
-//       });
-
-//     }
-
-
-//     // FORMAT PHONE NUMBER
-
-//     if (phone.startsWith("0")) {
-
-//       phone = "254" + phone.substring(1);
-
-//     }
-
-
-//     // CREATE UNIQUE REFERENCE
-
-//     const reference =
-//       crypto.randomBytes(8).toString("hex");
-
-
-
-//     // SEND STK PUSH
-
-//     const response = await stkPush(
-//       phone,
-//       amount,
-//       reference
-//     );
-
-
-//     const checkoutRequestID =
-//       response.CheckoutRequestID;
-
-
-
-//     if (!checkoutRequestID) {
-
-//       return res.status(400).json({
-//         message:"STK Push failed. No CheckoutRequestID received"
-//       });
-
-//     }
-
-
-
-//     // SAVE TRANSACTION
-
-//     const transaction =
-//       await Transaction.create({
-
-//         user:req.user._id,
-
-//         type:"deposit",
-
-//         amount:Number(amount),
-
-//         phone,
-
-//         reference,
-
-//         checkoutRequestID,
-
-//         status:"pending",
-
-//         description:"M-Pesa Deposit"
-
-//       });
-
-
-
-//     console.log(
-//       "Transaction created:",
-//       transaction._id
-//     );
-
-//     console.log(
-//       "Checkout ID:",
-//       checkoutRequestID
-//     );
-
-
-
-//     res.json({
-
-//       message:"STK Push sent",
-
-//       data:response,
-
-//       transactionId:transaction._id,
-
-//       checkoutRequestID
-
-//     });
-
-
-
-//   } catch(err){
-
-
-//     console.log(err);
-
-
-//     res.status(500).json({
-
-//       message:err.message
-
-//     });
-
-
-//   }
-
-// };
 const crypto = require("crypto");
 
+const { stkPush } = require("../services/mpesa");
+const Transaction = require("../models/Transaction");
 
-exports.initiatePayment = async (req,res)=>{
+exports.initiatePayment = async (req, res) => {
+  try {
+    let { phone, amount } = req.body;
 
-try{
+    // Validate input
+    if (!phone || !amount) {
+      return res.status(400).json({
+        message: "Phone and amount are required",
+      });
+    }
 
-let {phone, amount}=req.body;
+    amount = Number(amount);
 
+    if (isNaN(amount) || amount <= 0) {
+      return res.status(400).json({
+        message: "Invalid amount",
+      });
+    }
 
-if(phone.startsWith("0")){
- phone="254"+phone.substring(1);
-}
+    // Format phone number
+    phone = String(phone).trim();
 
+    if (phone.startsWith("0")) {
+      phone = "254" + phone.substring(1);
+    }
 
-const reference =
-"DEP-" + crypto.randomBytes(4).toString("hex");
+    if (phone.startsWith("+254")) {
+      phone = phone.replace("+", "");
+    }
 
+    // Generate unique reference
+    const reference =
+      "DEP-" + crypto.randomBytes(4).toString("hex").toUpperCase();
 
-const response =
-await stkPush(
- phone,
- amount,
- reference
-);
+    console.log("========== STK PUSH ==========");
+    console.log({
+      phone,
+      amount,
+      reference,
+    });
 
+    // Send STK Push
+    const response = await stkPush(
+      phone,
+      amount,
+      reference
+    );
 
-const transaction =
-await Transaction.create({
+    console.log("========== SAFARICOM RESPONSE ==========");
+    console.log(response);
 
- user:req.user._id,
+    if (response.ResponseCode !== "0") {
+      return res.status(400).json({
+        message:
+          response.ResponseDescription ||
+          "Failed to initiate payment",
+      });
+    }
 
- type:"deposit",
+    // Save pending transaction
+    const transaction = await Transaction.create({
+      user: req.user._id,
+      type: "deposit",
+      amount,
+      phone,
+      reference,
+      checkoutRequestID: response.CheckoutRequestID,
+      status: "pending",
+      description: "M-Pesa Deposit",
+    });
 
- amount:Number(amount),
+    console.log("Transaction saved:", transaction._id);
 
- phone,
+    return res.json({
+      success: true,
+      message: "STK Push sent successfully.",
+      transactionId: transaction._id,
+      checkoutRequestID: response.CheckoutRequestID,
+    });
 
- checkoutRequestID:
- response.CheckoutRequestID,
+  } catch (err) {
+    console.log("MPESA CONTROLLER ERROR");
+    console.log(err.response?.data || err.message);
 
- status:"pending",
-
- description:
- "M-Pesa Deposit",
-
- reference
-
-});
-
-
-res.json({
-
-message:"STK Push sent",
-
-data:response,
-
-transactionId:transaction._id
-
-});
-
-
-}catch(err){
-
-console.log(err);
-
-res.status(500).json({
-message:err.message
-});
-
-}
-
+    return res.status(500).json({
+      success: false,
+      message: err.response?.data?.errorMessage || err.message,
+    });
+  }
 };
