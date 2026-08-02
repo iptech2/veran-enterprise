@@ -1,174 +1,3 @@
-// import { useEffect, useState } from "react";
-// import Navbar from "../components/Navbar";
-// import api from "../services/api";
-
-// export default function Wallet() {
-//   const [balance, setBalance] = useState(0);
-//   const [amount, setAmount] = useState("");
-//   const [phone, setPhone] = useState("");
-//   const [loading, setLoading] = useState(false);
-//   const [checkingPayment, setCheckingPayment] = useState(false);
-
-//   const loadWallet = async () => {
-//     try {
-//       const res = await api.get("/wallet/balance");
-//       setBalance(Number(res.data.balance) || 0);
-//     } catch (err) {
-//       console.log(err.response?.data || err.message);
-//     }
-//   };
-
-//   useEffect(() => {
-//     loadWallet();
-//   }, []);
-
-//   const deposit = async () => {
-//     if (!amount || Number(amount) <= 0) {
-//       return alert("Enter a valid amount.");
-//     }
-
-//     if (!phone) {
-//       return alert("Enter phone number.");
-//     }
-
-//     try {
-//       setLoading(true);
-
-//       await api.post("/wallet/deposit", {
-//         amount: Number(amount),
-//         phone,
-//       });
-
-//       alert("STK Push sent. Complete payment on your phone.");
-
-//       setCheckingPayment(true);
-
-//       // Poll wallet every 5 seconds for 1 minute
-//       let attempts = 0;
-
-//       const interval = setInterval(async () => {
-//         attempts++;
-
-//         try {
-//           const res = await api.get("/wallet/balance");
-
-//           const newBalance = Number(res.data.balance);
-
-//           if (newBalance !== balance) {
-//             setBalance(newBalance);
-
-//             clearInterval(interval);
-
-//             setCheckingPayment(false);
-
-//             alert("Deposit successful! Wallet updated.");
-
-//             setAmount("");
-//           }
-
-//           if (attempts >= 12) {
-//             clearInterval(interval);
-//             setCheckingPayment(false);
-//           }
-
-//         } catch (err) {
-//           console.log(err);
-//         }
-
-//       }, 5000);
-
-//     } catch (err) {
-//       alert(err.response?.data?.message || "Deposit failed");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const withdraw = async () => {
-//     try {
-//       await api.post("/wallet/withdraw", {
-//         amount: Number(amount),
-//       });
-
-//       await loadWallet();
-
-//       setAmount("");
-
-//       alert("Withdrawal request submitted.");
-
-//     } catch (err) {
-//       alert(err.response?.data?.message || "Withdrawal failed");
-//     }
-//   };
-
-//   return (
-//     <>
-//       <Navbar />
-
-//       <div className="container mt-4">
-
-//         <div className="card p-4 bg-dark text-white mb-3">
-//           <h4>Wallet Balance</h4>
-
-//           <h2>KES {balance.toLocaleString()}</h2>
-
-//           {checkingPayment && (
-//             <p className="text-warning mt-2">
-//               Waiting for M-Pesa confirmation...
-//             </p>
-//           )}
-//         </div>
-
-//         <div className="card p-3">
-
-//           <input
-//             type="number"
-//             className="form-control mb-3"
-//             placeholder="Enter amount"
-//             value={amount}
-//             onChange={(e) => setAmount(e.target.value)}
-//           />
-
-//           <input
-//             className="form-control mb-3"
-//             placeholder="07XXXXXXXX"
-//             value={phone}
-//             onChange={(e) => setPhone(e.target.value)}
-//           />
-
-//           <div className="d-flex gap-2">
-
-//             <button
-//               className="btn btn-success"
-//               onClick={deposit}
-//               disabled={loading || checkingPayment}
-//             >
-//               {loading ? "Sending..." : "Deposit"}
-//             </button>
-
-//             <button
-//               className="btn btn-danger"
-//               onClick={withdraw}
-//             >
-//               Withdraw
-//             </button>
-
-//             <button
-//               className="btn btn-primary"
-//               onClick={loadWallet}
-//             >
-//               Refresh
-//             </button>
-
-//           </div>
-
-//         </div>
-
-//       </div>
-//     </>
-//   );
-// }
-
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import api from "../services/api";
@@ -180,15 +9,15 @@ export default function Wallet() {
   const [loading, setLoading] = useState(false);
   const [checkingPayment, setCheckingPayment] = useState(false);
 
-  // ===========================
-  // LOAD WALLET
-  // ===========================
+  // ==========================
+  // LOAD WALLET BALANCE
+  // ==========================
   const loadWallet = async () => {
     try {
       const res = await api.get("/wallet/balance");
       setBalance(Number(res.data.balance) || 0);
     } catch (err) {
-      console.log(err);
+      console.log(err.response?.data || err.message);
     }
   };
 
@@ -196,45 +25,63 @@ export default function Wallet() {
     loadWallet();
   }, []);
 
-  // ===========================
+  // ==========================
   // DEPOSIT
-  // ===========================
+  // ==========================
   const deposit = async () => {
+    if (!amount || Number(amount) <= 0) {
+      return alert("Enter a valid amount.");
+    }
+
+    if (!phone) {
+      return alert("Enter phone number.");
+    }
+
     try {
-      if (!amount || Number(amount) <= 0) {
-        return alert("Enter a valid amount.");
-      }
-
-      if (!phone) {
-        return alert("Enter phone number.");
-      }
-
       setLoading(true);
 
-      await api.post("/wallet/deposit", {
+      const previousBalance = balance;
+
+      const res = await api.post("/wallet/deposit", {
         amount: Number(amount),
         phone,
       });
 
-      alert("STK Push sent. Complete payment on your phone.");
+      alert(res.data.message || "STK Push sent. Complete payment on your phone.");
 
       setCheckingPayment(true);
 
-      // Check balance every 5 seconds
-      let count = 0;
+      let attempts = 0;
 
       const interval = setInterval(async () => {
-        count++;
+        attempts++;
 
-        await loadWallet();
+        try {
+          const wallet = await api.get("/wallet/balance");
 
-        if (count >= 12) {
-          clearInterval(interval);
-          setCheckingPayment(false);
+          const newBalance = Number(wallet.data.balance);
+
+          setBalance(newBalance);
+
+          if (newBalance > previousBalance) {
+            clearInterval(interval);
+
+            setCheckingPayment(false);
+
+            setAmount("");
+            setPhone("");
+
+            alert("Deposit successful!");
+          }
+
+          if (attempts >= 12) {
+            clearInterval(interval);
+            setCheckingPayment(false);
+          }
+        } catch (err) {
+          console.log(err);
         }
       }, 5000);
-
-      setAmount("");
 
     } catch (err) {
       alert(err.response?.data?.message || "Deposit failed");
@@ -243,16 +90,20 @@ export default function Wallet() {
     }
   };
 
-  // ===========================
+  // ==========================
   // WITHDRAW
-  // ===========================
+  // ==========================
   const withdraw = async () => {
+    if (!amount || Number(amount) <= 0) {
+      return alert("Enter amount.");
+    }
+
     try {
-      await api.post("/wallet/withdraw", {
+      const res = await api.post("/wallet/withdraw", {
         amount: Number(amount),
       });
 
-      alert("Withdrawal request submitted.");
+      alert(res.data.message);
 
       setAmount("");
 
@@ -269,7 +120,7 @@ export default function Wallet() {
 
       <div className="container mt-4">
 
-        <div className="card shadow p-4 mb-4">
+        <div className="card shadow border-0 p-4 mb-4">
 
           <h4>Wallet Balance</h4>
 
@@ -285,11 +136,9 @@ export default function Wallet() {
 
         </div>
 
-        <div className="card shadow p-4">
+        <div className="card shadow border-0 p-4">
 
-          <h5 className="mb-3">
-            Deposit / Withdraw
-          </h5>
+          <h4 className="mb-4">Deposit Money</h4>
 
           <input
             type="number"
@@ -306,24 +155,28 @@ export default function Wallet() {
             onChange={(e) => setPhone(e.target.value)}
           />
 
-          <div className="d-flex gap-2">
+          <div className="d-grid">
 
             <button
-              className="btn btn-success flex-fill"
-              disabled={loading}
+              className="btn btn-success"
+              disabled={loading || checkingPayment}
               onClick={deposit}
             >
-              {loading ? "Sending..." : "Deposit"}
+              {loading ? "Sending STK..." : "Deposit with M-Pesa"}
             </button>
-{/* 
-            <button
-              className="btn btn-danger flex-fill"
-              onClick={withdraw}
-            >
-              Withdraw
-            </button> */}
 
           </div>
+
+          <hr />
+
+          <h5>Withdraw</h5>
+
+          <button
+            className="btn btn-danger w-100"
+            onClick={withdraw}
+          >
+            Request Withdrawal
+          </button>
 
         </div>
 

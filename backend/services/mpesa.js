@@ -1,356 +1,89 @@
-// const axios = require("axios");
-// const moment = require("moment");
-
-// const getToken = async () => {
-//   const auth = Buffer.from(
-//     `${process.env.MPESA_CONSUMER_KEY}:${process.env.MPESA_CONSUMER_SECRET}`
-//   ).toString("base64");
-
-//   const response = await axios.get(
-//     "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
-//     {
-//       headers: {
-//         Authorization: `Basic ${auth}`,
-//       },
-//     }
-//   );
-
-//   return response.data.access_token;
-// };
-
-// exports.stkPush = async (phone, amount, reference) => {
-//   const token = await getToken();
-
-//   const timestamp = moment().format("YYYYMMDDHHmmss");
-//   const password = Buffer.from(
-//     `${process.env.MPESA_SHORTCODE}${process.env.MPESA_PASSKEY}${timestamp}`
-//   ).toString("base64");
-
-//   const payload = {
-//     BusinessShortCode: process.env.MPESA_SHORTCODE,
-//     Password: password,
-//     Timestamp: timestamp,
-//     TransactionType: "CustomerPayBillOnline",
-//     Amount: amount,
-//     PartyA: phone,
-//     PartyB: process.env.MPESA_SHORTCODE,
-//     PhoneNumber: phone,
-//     CallBackURL: process.env.MPESA_CALLBACK_URL,
-//     AccountReference: reference,
-//     TransactionDesc: "Wallet Deposit",
-//   };
-
-//   const response = await axios.post(
-//     "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
-//     payload,
-//     {
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//       },
-//     }
-//   );
-
-//   return response.data;
-// };
-
-
-// const axios = require("axios");
-// const moment = require("moment");
-
-
-// const getToken = async () => {
-
-//   const auth = Buffer.from(
-//     `${process.env.MPESA_CONSUMER_KEY}:${process.env.MPESA_CONSUMER_SECRET}`
-//   ).toString("base64");
-
-
-//   const response = await axios.get(
-//     "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
-//     {
-//       headers:{
-//         Authorization:`Basic ${auth}`
-//       }
-//     }
-//   );
-
-
-//   return response.data.access_token;
-
-// };
-
-
-
-// exports.stkPush = async (
-//   phone,
-//   amount,
-//   reference
-// )=>{
-
-
-// try{
-
-
-// const token = await getToken();
-
-
-// const timestamp =
-// moment().format("YYYYMMDDHHmmss");
-
-
-// const password =
-// Buffer.from(
-// `${process.env.MPESA_SHORTCODE}${process.env.MPESA_PASSKEY}${timestamp}`
-// )
-// .toString("base64");
-
-
-
-// const payload={
-
-
-// BusinessShortCode:
-// process.env.MPESA_SHORTCODE,
-
-
-// Password:
-// password,
-
-
-// Timestamp:
-// timestamp,
-
-
-// TransactionType:
-// "CustomerPayBillOnline",
-
-
-// Amount:
-// Number(amount),
-
-
-// PartyA:
-// phone,
-
-
-// PartyB:
-// process.env.MPESA_SHORTCODE,
-
-
-// PhoneNumber:
-// phone,
-
-
-// CallBackURL:
-// process.env.MPESA_CALLBACK_URL,
-
-
-// AccountReference:
-// reference,
-
-
-// TransactionDesc:
-// "Wallet Deposit"
-
-
-// };
-
-
-
-// console.log(
-// "STK PAYLOAD",
-// payload
-// );
-
-
-
-// const response =
-// await axios.post(
-
-// "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
-
-// payload,
-
-// {
-// headers:{
-// Authorization:`Bearer ${token}`
-// }
-// }
-
-// );
-
-
-
-// console.log(
-// "MPESA RESPONSE",
-// response.data
-// );
-
-
-// return response.data;
-
-
-
-// }catch(error){
-
-
-// console.log(
-// error.response?.data ||
-// error.message
-// );
-
-
-// throw error;
-
-
-// }
-
-
-
-// };
-
-
 const axios = require("axios");
 const moment = require("moment");
 
+/* ==========================================
+   GET MPESA ACCESS TOKEN
+========================================== */
+const getAccessToken = async () => {
+  try {
+    const auth = Buffer.from(
+      `${process.env.MPESA_CONSUMER_KEY}:${process.env.MPESA_CONSUMER_SECRET}`
+    ).toString("base64");
 
-const getToken = async () => {
+    const { data } = await axios.get(
+      "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
+      {
+        headers: {
+          Authorization: `Basic ${auth}`,
+        },
+      }
+    );
 
-  const auth = Buffer.from(
-    `${process.env.MPESA_CONSUMER_KEY}:${process.env.MPESA_CONSUMER_SECRET}`
-  ).toString("base64");
+    return data.access_token;
 
-
-  const response = await axios.get(
-    "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
-    {
-      headers: {
-        Authorization: `Basic ${auth}`,
-      },
-    }
-  );
-
-
-  return response.data.access_token;
-
+  } catch (err) {
+    console.log("========== TOKEN ERROR ==========");
+    console.log(err.response?.data || err.message);
+    throw err;
+  }
 };
 
+/* ==========================================
+   STK PUSH
+========================================== */
+const stkPush = async (phone, amount, reference) => {
+  try {
+    const token = await getAccessToken();
 
-
-// exports.stkPush = async (phone, amount, reference) => {
-
-//   try {
-exports.stkPush = async (phone, amount, reference) => {
-
-    console.log("REFERENCE RECEIVED:", reference);
-
-    try {
-
-    // ADD DEBUG HERE 👇
-    console.log("====== MPESA DEBUG ======");
-
-    console.log({
-      shortcode: process.env.MPESA_SHORTCODE,
-      passkey: process.env.MPESA_PASSKEY ? "AVAILABLE" : "MISSING",
-      consumerKey: process.env.MPESA_CONSUMER_KEY ? "AVAILABLE" : "MISSING",
-      callback: process.env.MPESA_CALLBACK_URL,
-      phone,
-      amount,
-      reference
-    });
-
-    console.log("=========================");
-
-
-
-    const token = await getToken();
-
-
-
-    const timestamp =
-      moment().format("YYYYMMDDHHmmss");
-
+    const timestamp = moment().format("YYYYMMDDHHmmss");
 
     const password = Buffer.from(
       `${process.env.MPESA_SHORTCODE}${process.env.MPESA_PASSKEY}${timestamp}`
     ).toString("base64");
 
-
-
     const payload = {
-
-      BusinessShortCode:
-        process.env.MPESA_SHORTCODE,
-
-      Password:
-        password,
-
-      Timestamp:
-        timestamp,
-
-      TransactionType:
-        "CustomerPayBillOnline",
-
-      Amount:
-        Number(amount),
-
-      PartyA:
-        phone,
-
-      PartyB:
-        process.env.MPESA_SHORTCODE,
-
-      PhoneNumber:
-        phone,
-
-      CallBackURL:
-        process.env.MPESA_CALLBACK_URL,
-
-      AccountReference:
-        reference,
-
-      TransactionDesc:
-        "Wallet Deposit"
-
+      BusinessShortCode: process.env.MPESA_SHORTCODE,
+      Password: password,
+      Timestamp: timestamp,
+      TransactionType: "CustomerPayBillOnline",
+      Amount: Number(amount),
+      PartyA: phone,
+      PartyB: process.env.MPESA_SHORTCODE,
+      PhoneNumber: phone,
+      CallBackURL: process.env.MPESA_CALLBACK_URL,
+      AccountReference: reference,
+      TransactionDesc: "Wallet Deposit",
     };
 
+    console.log("==================================");
+    console.log("MPESA REQUEST");
+    console.log(payload);
+    console.log("==================================");
 
-    console.log("STK PAYLOAD:", payload);
-
-
-
-    const response = await axios.post(
-
+    const { data } = await axios.post(
       "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
-
       payload,
-
       {
-        headers:{
-          Authorization:`Bearer ${token}`
-        }
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
-
     );
 
+    console.log("==================================");
+    console.log("MPESA RESPONSE");
+    console.log(data);
+    console.log("==================================");
 
-    console.log("MPESA RESPONSE:", response.data);
+    return data;
 
-
-    return response.data;
-
-
-  } catch(error) {
-
-
-    console.log(
-      "MPESA ERROR:",
-      error.response?.data || error.message
-    );
-
-
-    throw error;
-
+  } catch (err) {
+    console.log("========== STK PUSH ERROR ==========");
+    console.log(err.response?.data || err.message);
+    throw err;
   }
+};
 
+module.exports = {
+  stkPush,
 };

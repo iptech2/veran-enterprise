@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const Transaction = require("../models/Transaction");
-const mpesa = require("../services/mpesa");
+const { stkPush } = require("../services/mpesa");
 const crypto = require("crypto");
 
 /* =====================================
@@ -12,100 +12,127 @@ exports.getBalance = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({
+        success: false,
         message: "User not found",
       });
     }
 
-    res.json({
-      balance: user.balance || 0,
+    return res.json({
+      success: true,
+      balance: user.balance,
     });
+
   } catch (err) {
-    res.status(500).json({
+    console.log(err);
+
+    return res.status(500).json({
+      success: false,
       message: err.message,
     });
   }
 };
 
 /* =====================================
-   DEPOSIT (STK PUSH)
+   DEPOSIT (M-PESA STK PUSH)
 ===================================== */
 exports.deposit = async (req, res) => {
   try {
-    let { amount, phone } = req.body;
+
+    let { phone, amount } = req.body;
+
+    if (!phone || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone and amount are required",
+      });
+    }
 
     amount = Number(amount);
 
-    if (!amount || amount <= 0) {
+    if (isNaN(amount) || amount < 1) {
       return res.status(400).json({
+        success: false,
         message: "Invalid amount",
       });
     }
 
-    if (!phone) {
-      return res.status(400).json({
-        message: "Phone number is required",
-      });
+    // Format phone number
+    phone = phone.toString().trim();
+
+    if (phone.startsWith("0")) {
+      phone = "254" + phone.substring(1);
     }
 
-    phone = phone.trim();
+    if (phone.startsWith("+254")) {
+      phone = phone.replace("+", "");
+    }
 
-    // Convert 07XXXXXXXX to 2547XXXXXXXX
-    const formattedPhone = phone.startsWith("0")
-      ? "254" + phone.substring(1)
-      : phone;
+    // Internal reference
+    const reference =
+      "DEP-" + crypto.randomBytes(4).toString("hex").toUpperCase();
 
     console.log("========== STK PUSH ==========");
     console.log({
-      phone: formattedPhone,
+      phone,
       amount,
+      reference,
     });
 
     // Send STK Push
-    const response = await mpesa.stkPush(
-      formattedPhone,
-      amount
+    const response = await stkPush(
+      phone,
+      amount,
+      reference
     );
 
     console.log("========== SAFARICOM RESPONSE ==========");
     console.log(response);
 
+    if (response.ResponseCode !== "0") {
+      return res.status(400).json({
+        success: false,
+        message: response.ResponseDescription,
+      });
+    }
+
     // Save pending transaction
-    await Transaction.create({
+    const transaction = await Transaction.create({
       user: req.user.id,
       type: "deposit",
       amount,
       status: "pending",
-      reference:
-        response.CheckoutRequestID ||
-        crypto.randomUUID(),
-      description: "M-Pesa Wallet Deposit",
+
+      reference,
+
+      phone,
+
+      checkoutRequestID: response.CheckoutRequestID,
+
+      merchantRequestID: response.MerchantRequestID,
+
+      description: "M-Pesa Deposit",
     });
+
+    console.log("Transaction saved:");
+    console.log(transaction);
 
     return res.json({
       success: true,
       message: "STK Push sent successfully.",
       checkoutRequestID: response.CheckoutRequestID,
+      transactionId: transaction._id,
     });
 
   } catch (err) {
 
     console.log("========== MPESA ERROR ==========");
-
-    if (err.response) {
-      console.log(err.response.data);
-
-      return res.status(500).json({
-        message:
-          err.response.data.errorMessage ||
-          err.response.data.errorCode ||
-          err.message,
-      });
-    }
-
-    console.log(err);
+    console.log(err.response?.data || err.message);
 
     return res.status(500).json({
-      message: err.message,
+      success: false,
+      message:
+        err.response?.data?.errorMessage ||
+        err.message,
     });
   }
 };
@@ -115,12 +142,14 @@ exports.deposit = async (req, res) => {
 ===================================== */
 exports.withdraw = async (req, res) => {
   try {
+
     let { amount } = req.body;
 
     amount = Number(amount);
 
-    if (!amount || amount <= 0) {
+    if (isNaN(amount) || amount <= 0) {
       return res.status(400).json({
+        success: false,
         message: "Invalid amount",
       });
     }
@@ -129,39 +158,47 @@ exports.withdraw = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({
+        success: false,
         message: "User not found",
       });
     }
 
     if (user.balance < amount) {
       return res.status(400).json({
+        success: false,
         message: "Insufficient balance",
       });
     }
 
-    // Deduct balance immediately
     user.balance -= amount;
+    user.totalWithdrawn += amount;
+
     await user.save();
 
-    // Record withdrawal
     const transaction = await Transaction.create({
       user: user._id,
       type: "withdrawal",
       amount,
       status: "pending",
-      reference: crypto.randomUUID(),
+      reference:
+        "WTH-" +
+        crypto.randomBytes(4).toString("hex").toUpperCase(),
       description: "Withdrawal Request",
     });
 
     return res.json({
       success: true,
-      message: "Withdrawal request submitted successfully.",
+      message: "Withdrawal request submitted.",
       balance: user.balance,
       transaction,
     });
 
   } catch (err) {
+
+    console.log(err);
+
     return res.status(500).json({
+      success: false,
       message: err.message,
     });
   }

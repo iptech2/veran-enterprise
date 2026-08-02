@@ -1,83 +1,20 @@
-// const crypto = require("crypto");
-// exports.initiatePayment = async (req,res)=>{
-// try{
-// let {phone, amount}=req.body;
-
-// if(phone.startsWith("0")){
-//  phone="254"+phone.substring(1);
-// }
-// const reference =
-// "DEP-" + crypto.randomBytes(4).toString("hex");
-
-
-// const response =
-// await stkPush(
-//  phone,
-//  amount,
-//  reference
-// );
-
-
-// const transaction =
-// await Transaction.create({
-
-//  user:req.user._id,
-
-//  type:"deposit",
-
-//  amount:Number(amount),
-
-//  phone,
-
-//  checkoutRequestID:
-//  response.CheckoutRequestID,
-
-//  status:"pending",
-
-//  description:
-//  "M-Pesa Deposit",
-
-//  reference
-
-// });
-
-
-// res.json({
-
-// message:"STK Push sent",
-
-// data:response,
-
-// transactionId:transaction._id
-
-// });
-
-
-// }catch(err){
-
-// console.log(err);
-
-// res.status(500).json({
-// message:err.message
-// });
-
-// }
-
-// };
-
 const crypto = require("crypto");
 
 const { stkPush } = require("../services/mpesa");
 const Transaction = require("../models/Transaction");
 
-exports.initiatePayment = async (req, res) => {
+/* =====================================
+   INITIATE STK PUSH
+===================================== */
+
+exports.stkPushRequest = async (req, res) => {
   try {
     let { phone, amount } = req.body;
 
-    // Validate input
     if (!phone || !amount) {
       return res.status(400).json({
-        message: "Phone and amount are required",
+        success: false,
+        message: "Phone and amount are required.",
       });
     }
 
@@ -85,11 +22,12 @@ exports.initiatePayment = async (req, res) => {
 
     if (isNaN(amount) || amount <= 0) {
       return res.status(400).json({
-        message: "Invalid amount",
+        success: false,
+        message: "Invalid amount.",
       });
     }
 
-    // Format phone number
+    // Format phone
     phone = String(phone).trim();
 
     if (phone.startsWith("0")) {
@@ -100,17 +38,21 @@ exports.initiatePayment = async (req, res) => {
       phone = phone.replace("+", "");
     }
 
-    // Generate unique reference
+    // Generate internal reference
     const reference =
-      "DEP-" + crypto.randomBytes(4).toString("hex").toUpperCase();
+      "DEP-" +
+      Date.now() +
+      "-" +
+      crypto.randomBytes(3).toString("hex").toUpperCase();
 
-    console.log("========== STK PUSH ==========");
+    console.log("========== NEW DEPOSIT ==========");
     console.log({
+      user: req.user._id,
       phone,
       amount,
       reference,
     });
- console.log("Reference before stkPush:", reference);
+
     // Send STK Push
     const response = await stkPush(
       phone,
@@ -118,14 +60,10 @@ exports.initiatePayment = async (req, res) => {
       reference
     );
 
-    console.log("========== SAFARICOM RESPONSE ==========");
-    console.log(response);
-
     if (response.ResponseCode !== "0") {
       return res.status(400).json({
-        message:
-          response.ResponseDescription ||
-          "Failed to initiate payment",
+        success: false,
+        message: response.ResponseDescription,
       });
     }
 
@@ -136,22 +74,23 @@ exports.initiatePayment = async (req, res) => {
       amount,
       phone,
       reference,
+      merchantRequestID: response.MerchantRequestID,
       checkoutRequestID: response.CheckoutRequestID,
       status: "pending",
       description: "M-Pesa Deposit",
     });
 
-    console.log("Transaction saved:", transaction._id);
+    console.log("Transaction Saved");
+    console.log(transaction);
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: "STK Push sent successfully.",
-      transactionId: transaction._id,
-      checkoutRequestID: response.CheckoutRequestID,
+      transaction,
     });
 
   } catch (err) {
-    console.log("MPESA CONTROLLER ERROR");
+    console.log("========== MPESA CONTROLLER ERROR ==========");
     console.log(err.response?.data || err.message);
 
     return res.status(500).json({
