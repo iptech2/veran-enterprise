@@ -9,35 +9,66 @@ export default function Login() {
 
   const navigate = useNavigate();
 
+  // const handleLogin = async (e) => {
+  //   e.preventDefault();
+
+  //   try {
+  //     const isEmail = identifier.includes("@");
+
+  //     const res = await api.post("/auth/login", {
+  //       email: isEmail ? identifier : undefined,
+  //       phone: !isEmail ? identifier : undefined,
+  //       password,
+  //     });
+
+  //     // Save login session
+  //     localStorage.setItem("token", res.data.token);
+  //     localStorage.setItem(
+  //       "user",
+  //       JSON.stringify(res.data.user)
+  //     );
+
+  //     // Redirect according to role
+  //     if (res.data.user.role === "admin") {
+  //       navigate("/admin");
+  //     } else {
+  //       navigate("/dashboard");
+  //     }
+  //   } catch (err) {
+  //     alert(err.response?.data?.message || "Login failed");
+  //   }
+  // };
+
   const handleLogin = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      const isEmail = identifier.includes("@");
+  try {
+    const isEmail = identifier.includes("@");
 
-      const res = await api.post("/auth/login", {
-        email: isEmail ? identifier : undefined,
-        phone: !isEmail ? identifier : undefined,
-        password,
-      });
+    const res = await api.post("/auth/login", {
+      email: isEmail ? identifier : undefined,
+      phone: !isEmail ? identifier : undefined,
+      password,
+    });
 
-      // Save login session
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify(res.data.user)
-      );
+    const { token, user } = res.data;
 
-      // Redirect according to role
-      if (res.data.user.role === "admin") {
-        navigate("/admin");
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
+
+    // Give localStorage time to update
+    setTimeout(() => {
+      if (user?.role === "admin") {
+        navigate("/admin", { replace: true });
       } else {
-        navigate("/dashboard");
+        navigate("/dashboard", { replace: true });
       }
-    } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
-    }
-  };
+    }, 100);
+
+  } catch (err) {
+    alert(err.response?.data?.message || "Login failed");
+  }
+};
 
   return (
     <>
