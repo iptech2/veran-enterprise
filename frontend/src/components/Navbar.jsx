@@ -703,7 +703,7 @@ export default function Navbar() {
       >
         <div className="container">
 
-          <Link
+          {/* <Link
             to={
               user.role === "admin"
                 ? "/admin"
@@ -713,7 +713,20 @@ export default function Navbar() {
           >
             <FaBuilding />
             Veran Enterprise
-          </Link>
+          </Link> */}
+          <Link
+  to={
+    token
+      ? user.role === "admin"
+        ? "/admin"
+        : "/dashboard"
+      : "/"
+  }
+  className="navbar-brand fw-bold d-flex align-items-center gap-2"
+>
+  <FaBuilding />
+  Veran Enterprise
+</Link>
 
           <button
             className="btn btn-outline-light d-lg-none"
