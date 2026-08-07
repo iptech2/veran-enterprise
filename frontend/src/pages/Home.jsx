@@ -40,7 +40,7 @@ export default function Home() {
                 </Link>
 
                 <Link
-                  to="/"
+                  to="/login"
                   className="btn btn-outline-light btn-lg"
                 >
                   Login
@@ -541,7 +541,7 @@ export default function Home() {
       </Link>
 
       <Link
-        to="/"
+        to="/login"
         className="btn btn-outline-light btn-lg px-4"
       >
         Login

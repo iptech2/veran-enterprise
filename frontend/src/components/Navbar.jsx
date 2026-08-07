@@ -747,7 +747,7 @@ export default function Navbar() {
               <>
                 <NavLink
                   className="nav-link text-white"
-                  to="/"
+                  to="/login"
                 >
                   Login
                 </NavLink>
