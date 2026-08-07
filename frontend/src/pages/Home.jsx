@@ -53,7 +53,7 @@ export default function Home() {
             <div className="col-lg-6 text-center">
 
               <img
-                src="/investment.png"
+                src="/logo.png"
                 className="img-fluid"
                 alt="Investment"
               />
