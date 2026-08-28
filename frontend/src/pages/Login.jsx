@@ -6,69 +6,57 @@ import Navbar from "../components/Navbar";
 export default function Login() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  // const handleLogin = async (e) => {
-  //   e.preventDefault();
-
-  //   try {
-  //     const isEmail = identifier.includes("@");
-
-  //     const res = await api.post("/auth/login", {
-  //       email: isEmail ? identifier : undefined,
-  //       phone: !isEmail ? identifier : undefined,
-  //       password,
-  //     });
-
-  //     // Save login session
-  //     localStorage.setItem("token", res.data.token);
-  //     localStorage.setItem(
-  //       "user",
-  //       JSON.stringify(res.data.user)
-  //     );
-
-  //     // Redirect according to role
-  //     if (res.data.user.role === "admin") {
-  //       navigate("/admin");
-  //     } else {
-  //       navigate("/dashboard");
-  //     }
-  //   } catch (err) {
-  //     alert(err.response?.data?.message || "Login failed");
-  //   }
-  // };
-
   const handleLogin = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const isEmail = identifier.includes("@");
+    if (loading) return;
 
-    const res = await api.post("/auth/login", {
-      email: isEmail ? identifier : undefined,
-      phone: !isEmail ? identifier : undefined,
-      password,
-    });
+    setLoading(true);
 
-    const { token, user } = res.data;
+    try {
+      const cleanIdentifier = identifier.trim();
 
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
+      const isEmail = cleanIdentifier.includes("@");
 
-    // Give localStorage time to update
-    setTimeout(() => {
-      if (user?.role === "admin") {
+      const res = await api.post("/auth/login", {
+        email: isEmail ? cleanIdentifier : undefined,
+        phone: !isEmail ? cleanIdentifier : undefined,
+        password,
+      });
+
+      const { token, user } = res.data;
+
+      if (!token || !user) {
+        throw new Error("Invalid login response");
+      }
+
+      // Save login session
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Redirect immediately
+      if (user.role === "admin") {
         navigate("/admin", { replace: true });
       } else {
         navigate("/dashboard", { replace: true });
       }
-    }, 100);
 
-  } catch (err) {
-    alert(err.response?.data?.message || "Login failed");
-  }
-};
+    } catch (err) {
+      console.error("Login error:", err);
+
+      alert(
+        err.response?.data?.message ||
+        "Login failed. Please check your details and try again."
+      );
+
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -89,11 +77,14 @@ export default function Login() {
           <form onSubmit={handleLogin}>
 
             <input
+              type="text"
               className="form-control mb-2"
               placeholder="Email or Phone"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
+              autoComplete="username"
               required
+              disabled={loading}
             />
 
             <input
@@ -102,23 +93,32 @@ export default function Login() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
               required
+              disabled={loading}
             />
 
             <button
               type="submit"
               className="btn btn-primary w-100"
+              disabled={loading}
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </button>
+
             <div className="text-center mt-3">
-  <Link to="/forgot-password">
-    Forgot Password?
-  </Link>
-</div>
-    <div className="text-center mt-3">
-  <Link to="/register"> Sign  up  </Link>
-</div>
+              <Link to="/forgot-password">
+                Forgot Password?
+              </Link>
+            </div>
+
+            <div className="text-center mt-3">
+              Don't have an account?{" "}
+              <Link to="/register">
+                Sign up
+              </Link>
+            </div>
+
           </form>
         </div>
       </div>

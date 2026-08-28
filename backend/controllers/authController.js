@@ -190,12 +190,15 @@ exports.login = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({
-      $or: [
-        email ? { email } : null,
-        phone ? { phone } : null,
-      ].filter(Boolean),
-    });
+    // Clean input
+    const identifier = (email || phone).trim();
+
+    // Find user
+    const user = await User.findOne(
+      email
+        ? { email: identifier }
+        : { phone: identifier }
+    ).lean();
 
     if (!user) {
       return res.status(400).json({
@@ -203,7 +206,11 @@ exports.login = async (req, res) => {
       });
     }
 
-    const match = await bcrypt.compare(password, user.password);
+    // Check password
+    const match = await bcrypt.compare(
+      password,
+      user.password
+    );
 
     if (!match) {
       return res.status(400).json({
@@ -211,12 +218,14 @@ exports.login = async (req, res) => {
       });
     }
 
+    // Check email verification
     if (!user.isVerified) {
       return res.status(403).json({
         message: "Please verify your email first",
       });
     }
 
+    // Generate JWT
     const token = jwt.sign(
       {
         id: user._id,
@@ -229,7 +238,9 @@ exports.login = async (req, res) => {
     );
 
     return res.json({
+      success: true,
       token,
+
       user: {
         id: user._id,
         fullName: user.fullName,
@@ -243,11 +254,85 @@ exports.login = async (req, res) => {
     });
 
   } catch (error) {
+    console.error("LOGIN ERROR:", error);
+
     return res.status(500).json({
-      message: error.message,
+      message: "Server error during login",
     });
   }
 };
+
+// /* =========================
+//    LOGIN
+// ========================= */
+// exports.login = async (req, res) => {
+//   try {
+//     const { email, phone, password } = req.body;
+
+//     if (!password || (!email && !phone)) {
+//       return res.status(400).json({
+//         message: "Email or phone and password required",
+//       });
+//     }
+
+//     const user = await User.findOne({
+//       $or: [
+//         email ? { email } : null,
+//         phone ? { phone } : null,
+//       ].filter(Boolean),
+//     });
+
+//     if (!user) {
+//       return res.status(400).json({
+//         message: "Invalid credentials",
+//       });
+//     }
+
+//     const match = await bcrypt.compare(password, user.password);
+
+//     if (!match) {
+//       return res.status(400).json({
+//         message: "Invalid credentials",
+//       });
+//     }
+
+//     if (!user.isVerified) {
+//       return res.status(403).json({
+//         message: "Please verify your email first",
+//       });
+//     }
+
+//     const token = jwt.sign(
+//       {
+//         id: user._id,
+//         role: user.role,
+//       },
+//       process.env.JWT_SECRET,
+//       {
+//         expiresIn: "7d",
+//       }
+//     );
+
+//     return res.json({
+//       token,
+//       user: {
+//         id: user._id,
+//         fullName: user.fullName,
+//         email: user.email,
+//         phone: user.phone,
+//         role: user.role,
+//         balance: user.balance,
+//         isVerified: user.isVerified,
+//         referralCode: user.referralCode,
+//       },
+//     });
+
+//   } catch (error) {
+//     return res.status(500).json({
+//       message: error.message,
+//     });
+//   }
+// };
 
 /* =========================
    FORGOT PASSWORD
