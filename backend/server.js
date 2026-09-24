@@ -60,7 +60,7 @@ app.use("/api/withdrawals", require("./routes/withdrawalRoutes"));
 app.use("/api/investments", require("./routes/investmentRoutes"));
 app.use("/api/referrals", require("./routes/referralRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
-// app.use("/api/notifications", require("./routes/notificationRoutes"));
+app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/manual-deposits",require("./routes/manualDepositRoutes"));
 
 /* ==========================
