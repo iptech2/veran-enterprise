@@ -1,15 +1,19 @@
-import crypto from "crypto";
-import mongoose from "mongoose";
-import ManualDeposit from "../models/ManualDeposit.js";
-import User from "../models/User.js";
-import Transaction from "../models/Transaction.js";
+const crypto = require("crypto");
+const mongoose = require("mongoose");
+
+const ManualDeposit = require("../models/ManualDeposit");
+const User = require("../models/User");
+const Transaction = require("../models/Transaction");
+
+// Veran Enterprise Buy Goods Till
+const VERAN_TILL_NUMBER = "9207399";
 
 // ==========================================
 // USER: CREATE MANUAL DEPOSIT
 // ==========================================
-export const createManualDeposit = async (req, res) => {
+const createManualDeposit = async (req, res) => {
   try {
-    const { amount, phone, tillNumber } = req.body;
+    const { amount, phone } = req.body;
 
     if (!amount || Number(amount) <= 0) {
       return res.status(400).json({
@@ -23,12 +27,6 @@ export const createManualDeposit = async (req, res) => {
       });
     }
 
-    if (!tillNumber) {
-      return res.status(400).json({
-        message: "Till number is required.",
-      });
-    }
-
     const reference = `MAN-${Date.now()}-${crypto
       .randomBytes(4)
       .toString("hex")
@@ -38,7 +36,7 @@ export const createManualDeposit = async (req, res) => {
       user: req.user.id,
       amount: Number(amount),
       phone: phone.trim(),
-      tillNumber: tillNumber.trim(),
+      tillNumber: VERAN_TILL_NUMBER,
       reference,
       status: "pending",
     });
@@ -68,7 +66,7 @@ export const createManualDeposit = async (req, res) => {
 // ==========================================
 // USER: GET OWN MANUAL DEPOSITS
 // ==========================================
-export const getMyManualDeposits = async (req, res) => {
+const getMyManualDeposits = async (req, res) => {
   try {
     const deposits = await ManualDeposit.find({
       user: req.user.id,
@@ -89,7 +87,7 @@ export const getMyManualDeposits = async (req, res) => {
 // ==========================================
 // ADMIN: GET PENDING DEPOSITS
 // ==========================================
-export const getPendingManualDeposits = async (req, res) => {
+const getPendingManualDeposits = async (req, res) => {
   try {
     const deposits = await ManualDeposit.find({
       status: "pending",
@@ -110,7 +108,7 @@ export const getPendingManualDeposits = async (req, res) => {
 // ==========================================
 // ADMIN: APPROVE DEPOSIT
 // ==========================================
-export const approveManualDeposit = async (req, res) => {
+const approveManualDeposit = async (req, res) => {
   const session = await mongoose.startSession();
 
   try {
@@ -139,19 +137,29 @@ export const approveManualDeposit = async (req, res) => {
       });
     }
 
-    // Increase wallet balance
-    user.balance = Number(user.balance || 0) + Number(deposit.amount);
+    // ==========================================
+    // INCREASE USER WALLET BALANCE
+    // ==========================================
+
+    user.balance =
+      Number(user.balance || 0) + Number(deposit.amount);
 
     await user.save({ session });
 
-    // Update deposit
+    // ==========================================
+    // UPDATE DEPOSIT STATUS
+    // ==========================================
+
     deposit.status = "approved";
     deposit.approvedBy = req.user.id;
     deposit.approvedAt = new Date();
 
     await deposit.save({ session });
 
-    // Create wallet transaction
+    // ==========================================
+    // CREATE WALLET TRANSACTION
+    // ==========================================
+
     await Transaction.create(
       [
         {
@@ -169,13 +177,17 @@ export const approveManualDeposit = async (req, res) => {
     await session.commitTransaction();
 
     return res.json({
-      message: "Deposit approved and wallet credited successfully.",
+      message:
+        "Deposit approved and wallet credited successfully.",
       balance: user.balance,
     });
   } catch (error) {
     await session.abortTransaction();
 
-    console.error("Approve manual deposit error:", error);
+    console.error(
+      "Approve manual deposit error:",
+      error
+    );
 
     return res.status(500).json({
       message: "Failed to approve deposit.",
@@ -188,7 +200,7 @@ export const approveManualDeposit = async (req, res) => {
 // ==========================================
 // ADMIN: REJECT DEPOSIT
 // ==========================================
-export const rejectManualDeposit = async (req, res) => {
+const rejectManualDeposit = async (req, res) => {
   try {
     const { adminNote } = req.body;
 
@@ -200,7 +212,9 @@ export const rejectManualDeposit = async (req, res) => {
       {
         $set: {
           status: "rejected",
-          adminNote: adminNote || "Deposit rejected by administrator.",
+          adminNote:
+            adminNote ||
+            "Deposit rejected by administrator.",
           rejectedAt: new Date(),
           approvedBy: req.user.id,
         },
@@ -212,7 +226,8 @@ export const rejectManualDeposit = async (req, res) => {
 
     if (!deposit) {
       return res.status(404).json({
-        message: "Deposit request not found or already processed.",
+        message:
+          "Deposit request not found or already processed.",
       });
     }
 
@@ -221,10 +236,25 @@ export const rejectManualDeposit = async (req, res) => {
       deposit,
     });
   } catch (error) {
-    console.error("Reject manual deposit error:", error);
+    console.error(
+      "Reject manual deposit error:",
+      error
+    );
 
     return res.status(500).json({
       message: "Failed to reject deposit.",
     });
   }
+};
+
+// ==========================================
+// EXPORT CONTROLLERS
+// ==========================================
+
+module.exports = {
+  createManualDeposit,
+  getMyManualDeposits,
+  getPendingManualDeposits,
+  approveManualDeposit,
+  rejectManualDeposit,
 };

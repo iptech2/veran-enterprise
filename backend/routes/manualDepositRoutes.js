@@ -1,15 +1,15 @@
-import express from "express";
+const express = require("express");
 
-import {
+const {
   createManualDeposit,
   getMyManualDeposits,
   getPendingManualDeposits,
   approveManualDeposit,
   rejectManualDeposit,
-} from "../controllers/manualDepositController.js";
+} = require("../controllers/manualDepositController");
 
-import authMiddleware from "../middleware/authMiddleware.js";
-import adminMiddleware from "../middleware/adminMiddleware.js";
+const authMiddleware = require("../middleware/authMiddleware");
+const adminMiddleware = require("../middleware/adminMiddleware");
 
 const router = express.Router();
 
@@ -54,4 +54,4 @@ router.put(
   rejectManualDeposit
 );
 
-export default router;
+module.exports = router;
