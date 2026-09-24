@@ -177,9 +177,6 @@
 // }
 
 
-
-
-
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import api from "../services/api";
@@ -194,6 +191,9 @@ export default function Wallet() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [checkingPayment, setCheckingPayment] = useState(false);
+
+  // STK unavailable popup
+  const [showStkUnavailable, setShowStkUnavailable] = useState(false);
 
   // ==========================
   // MANUAL DEPOSIT
@@ -305,6 +305,29 @@ export default function Wallet() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ==========================
+  // STK PUSH CURRENTLY UNAVAILABLE
+  // ==========================
+  const handleStkDeposit = () => {
+    setShowStkUnavailable(true);
+  };
+
+  // ==========================
+  // GO TO MANUAL DEPOSIT
+  // ==========================
+  const goToManualDeposit = () => {
+    setShowStkUnavailable(false);
+
+    setTimeout(() => {
+      document
+        .getElementById("manual-deposit")
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+    }, 150);
   };
 
   // ==========================
@@ -437,7 +460,9 @@ export default function Wallet() {
 
             {checkingPayment && (
               <div className="alert alert-info mt-4 mb-0 rounded-3">
-                <strong>Waiting for M-Pesa confirmation...</strong>
+                <strong>
+                  Waiting for M-Pesa confirmation...
+                </strong>
                 <br />
                 Please complete the payment on your phone.
               </div>
@@ -455,13 +480,22 @@ export default function Wallet() {
           <div className="card-body p-4">
 
             <div className="mb-4">
-              <h4 className="fw-bold mb-1">
-                Deposit with M-Pesa
-              </h4>
+              <div className="d-flex align-items-center gap-2 mb-1">
+
+                <h4 className="fw-bold mb-0">
+                  Deposit with M-Pesa
+                </h4>
+
+                <span className="badge bg-warning text-dark">
+                  Temporarily Unavailable
+                </span>
+
+              </div>
 
               <p className="text-muted mb-0">
-                Use STK Push to deposit money directly
-                into your wallet.
+                STK Push is temporarily unavailable.
+                You can still deposit using our manual
+                M-Pesa option below.
               </p>
             </div>
 
@@ -509,14 +543,10 @@ export default function Wallet() {
 
               <button
                 className="btn btn-success btn-lg rounded-3"
-                disabled={
-                  loading || checkingPayment
-                }
-                onClick={deposit}
+                disabled={loading || checkingPayment}
+                onClick={handleStkDeposit}
               >
-                {loading
-                  ? "Sending STK..."
-                  : "Deposit with M-Pesa"}
+                Deposit with M-Pesa
               </button>
 
             </div>
@@ -528,7 +558,10 @@ export default function Wallet() {
         {/* ==========================
             MANUAL M-PESA
         ========================== */}
-        <div className="card border-0 shadow rounded-4 mb-4 overflow-hidden">
+        <div
+          id="manual-deposit"
+          className="card border-0 shadow rounded-4 mb-4 overflow-hidden"
+        >
 
           {/* Header */}
           <div
@@ -612,19 +645,26 @@ export default function Wallet() {
             {/* INSTRUCTIONS */}
             <div className="alert alert-info rounded-3">
 
-              <strong>How to deposit manually:</strong>
+              <strong>
+                How to deposit manually:
+              </strong>
 
               <ol className="mb-0 mt-2">
+
                 <li>
                   Open M-Pesa on your phone.
                 </li>
 
                 <li>
-                  Select <strong>Lipa na M-Pesa</strong>.
+                  Select{" "}
+                  <strong>Lipa na M-Pesa</strong>.
                 </li>
 
                 <li>
-                  Select <strong>Buy Goods and Services</strong>.
+                  Select{" "}
+                  <strong>
+                    Buy Goods and Services
+                  </strong>.
                 </li>
 
                 <li>
@@ -644,6 +684,7 @@ export default function Wallet() {
                   Enter the phone number used for payment
                   below and submit the request.
                 </li>
+
               </ol>
 
             </div>
@@ -790,6 +831,7 @@ export default function Wallet() {
                 <table className="table align-middle">
 
                   <thead>
+
                     <tr>
                       <th>Amount</th>
                       <th>Phone</th>
@@ -798,6 +840,7 @@ export default function Wallet() {
                       <th>Status</th>
                       <th>Date</th>
                     </tr>
+
                   </thead>
 
                   <tbody>
@@ -908,6 +951,189 @@ export default function Wallet() {
         </div>
 
       </div>
+
+      {/* =====================================================
+          STK PUSH UNAVAILABLE POPUP
+      ===================================================== */}
+
+      {showStkUnavailable && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          role="dialog"
+          aria-modal="true"
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.65)",
+            zIndex: 1055,
+          }}
+        >
+
+          <div className="modal-dialog modal-dialog-centered px-3">
+
+            <div
+              className="modal-content border-0 shadow-lg rounded-4 overflow-hidden"
+            >
+
+              {/* POPUP TOP */}
+              <div
+                className="text-center text-white p-4"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #198754, #146c43)",
+                }}
+              >
+
+                <div
+                  className="mx-auto mb-3 rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center"
+                  style={{
+                    width: "72px",
+                    height: "72px",
+                    fontSize: "34px",
+                  }}
+                >
+                  ⚡
+                </div>
+
+                <h4 className="fw-bold mb-1">
+                  STK Push Temporarily Unavailable
+                </h4>
+
+                <p className="mb-0 opacity-75">
+                  We're making a few improvements to
+                  our M-Pesa payment service.
+                </p>
+
+              </div>
+
+              {/* POPUP BODY */}
+              <div className="modal-body p-4">
+
+                <p className="text-muted text-center mb-4">
+                  Don't worry — you can still deposit
+                  money into your Veran Enterprise wallet
+                  using our secure manual M-Pesa payment
+                  option.
+                </p>
+
+                {/* TILL */}
+                <div
+                  className="text-center border rounded-4 p-3 mb-4"
+                  style={{
+                    backgroundColor: "#f8f9fa",
+                  }}
+                >
+
+                  <small className="text-muted d-block mb-1">
+                    VERAN ENTERPRISE BUY GOODS TILL
+                  </small>
+
+                  <h2
+                    className="fw-bold text-success mb-1"
+                    style={{
+                      letterSpacing: "4px",
+                    }}
+                  >
+                    9207399
+                  </h2>
+
+                  <small className="text-muted">
+                    Available for manual deposits
+                  </small>
+
+                </div>
+
+                {/* QUICK INSTRUCTIONS */}
+                <div className="mb-4">
+
+                  <div className="d-flex mb-3">
+
+                    <div
+                      className="rounded-circle bg-success text-white fw-bold d-flex align-items-center justify-content-center me-3 flex-shrink-0"
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                      }}
+                    >
+                      1
+                    </div>
+
+                    <div>
+                      <strong>
+                        Pay via M-Pesa
+                      </strong>
+
+                      <div className="small text-muted">
+                        Lipa na M-Pesa → Buy Goods and
+                        Services → Till 9207399
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <div className="d-flex">
+
+                    <div
+                      className="rounded-circle bg-success text-white fw-bold d-flex align-items-center justify-content-center me-3 flex-shrink-0"
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                      }}
+                    >
+                      2
+                    </div>
+
+                    <div>
+                      <strong>
+                        Submit your payment
+                      </strong>
+
+                      <div className="small text-muted">
+                        Enter the amount and phone number
+                        used for the payment.
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+
+                {/* ACTIONS */}
+                <div className="d-grid gap-2">
+
+                  <button
+                    type="button"
+                    className="btn btn-success btn-lg rounded-3"
+                    onClick={goToManualDeposit}
+                  >
+                    Continue with Manual Deposit
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-light border rounded-3"
+                    onClick={() =>
+                      setShowStkUnavailable(false)
+                    }
+                  >
+                    Maybe Later
+                  </button>
+
+                </div>
+
+                <p className="text-center text-muted small mt-3 mb-0">
+                  Thank you for your patience and for
+                  using Veran Enterprise.
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
+
     </>
   );
 }
