@@ -10,6 +10,10 @@ export default function Dashboard() {
   const [selectedPackage, setSelectedPackage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Fraud warning
+  const [showFraudWarning, setShowFraudWarning] = useState(false);
+  const [fraudAcknowledged, setFraudAcknowledged] = useState(false);
+
   /* ===========================
       LOAD DASHBOARD
   ============================ */
@@ -50,16 +54,32 @@ export default function Dashboard() {
   }, []);
 
   /* ===========================
-      CREATE INVESTMENT
+      INVESTMENT BUTTON
   ============================ */
 
-  const invest = async () => {
+  const invest = () => {
     if (!selectedPackage) {
       return alert("Please select a package.");
     }
 
     if (!amount || Number(amount) <= 0) {
       return alert("Enter a valid amount.");
+    }
+
+    // Show fraud warning before submitting investment
+    setFraudAcknowledged(false);
+    setShowFraudWarning(true);
+  };
+
+  /* ===========================
+      CONFIRM INVESTMENT
+  ============================ */
+
+  const confirmInvestment = async () => {
+    if (!fraudAcknowledged) {
+      return alert(
+        "Please confirm that you understand and agree to the fraud warning before continuing."
+      );
     }
 
     try {
@@ -70,14 +90,21 @@ export default function Dashboard() {
         amount: Number(amount),
       });
 
-      alert(res.data.message || "Investment successful");
+      alert(
+        res.data.message || "Investment successful"
+      );
 
       setAmount("");
       setSelectedPackage("");
+      setShowFraudWarning(false);
+      setFraudAcknowledged(false);
 
       await loadDashboard();
     } catch (err) {
-      alert(err.response?.data?.message || "Investment failed");
+      alert(
+        err.response?.data?.message ||
+          "Investment failed"
+      );
     } finally {
       setLoading(false);
     }
@@ -118,7 +145,9 @@ export default function Dashboard() {
               className="form-control mb-3"
               placeholder="Enter Amount"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) =>
+                setAmount(e.target.value)
+              }
             />
 
             <div className="row">
@@ -146,7 +175,9 @@ export default function Dashboard() {
                           : ""
                       }`}
                       style={{ cursor: "pointer" }}
-                      onClick={() => setSelectedPackage(pkg._id)}
+                      onClick={() =>
+                        setSelectedPackage(pkg._id)
+                      }
                     >
                       <div className="card-body">
 
@@ -159,20 +190,30 @@ export default function Dashboard() {
 
                         <p>
                           Duration:
-                          <strong> {pkg.duration} Days</strong>
+                          <strong>
+                            {" "}
+                            {pkg.duration} Days
+                          </strong>
                         </p>
 
                         <p>
                           Minimum:
-                          <strong> KES {pkg.minAmount}</strong>
+                          <strong>
+                            {" "}
+                            KES {pkg.minAmount}
+                          </strong>
                         </p>
 
                         <p>
                           Maximum:
-                          <strong> KES {pkg.maxAmount}</strong>
+                          <strong>
+                            {" "}
+                            KES {pkg.maxAmount}
+                          </strong>
                         </p>
 
-                        {selectedPackage === pkg._id && (
+                        {selectedPackage ===
+                          pkg._id && (
                           <span className="badge bg-success">
                             Selected
                           </span>
@@ -189,6 +230,7 @@ export default function Dashboard() {
             </div>
 
             <button
+              type="button"
               className="btn btn-success w-100"
               onClick={invest}
               disabled={loading}
@@ -230,12 +272,18 @@ export default function Dashboard() {
 
                   <p>
                     Amount:
-                    <strong> KES {inv.amount}</strong>
+                    <strong>
+                      {" "}
+                      KES {inv.amount}
+                    </strong>
                   </p>
 
                   <p>
                     ROI:
-                    <strong> {inv.roi}%</strong>
+                    <strong>
+                      {" "}
+                      {inv.roi}%
+                    </strong>
                   </p>
 
                   <p>
@@ -248,7 +296,10 @@ export default function Dashboard() {
 
                   <p>
                     Status:
-                    <strong> {inv.status}</strong>
+                    <strong>
+                      {" "}
+                      {inv.status}
+                    </strong>
                   </p>
 
                   <p>
@@ -282,6 +333,192 @@ export default function Dashboard() {
         </div>
 
       </div>
+
+      {/* =========================================
+          FRAUD WARNING MODAL
+      ========================================== */}
+
+      {showFraudWarning && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          role="dialog"
+          aria-modal="true"
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            zIndex: 1055,
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered px-3">
+
+            <div className="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+
+              {/* HEADER */}
+
+              <div
+                className="text-white text-center p-4"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #dc3545, #a71d2a)",
+                }}
+              >
+
+                <div
+                  className="mx-auto mb-3 rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center"
+                  style={{
+                    width: "70px",
+                    height: "70px",
+                    fontSize: "32px",
+                  }}
+                >
+                  ⚠️
+                </div>
+
+                <h4 className="fw-bold mb-1">
+                  Important Investment Warning
+                </h4>
+
+                <p className="mb-0 opacity-75">
+                  Please read carefully before
+                  confirming your investment.
+                </p>
+
+              </div>
+
+              {/* BODY */}
+
+              <div className="modal-body p-4">
+
+                <div className="alert alert-danger border-0 rounded-3">
+
+                  <strong>
+                    Fraud is strictly prohibited.
+                  </strong>
+
+                  <br />
+
+                  Veran Enterprise does not tolerate
+                  false information, impersonation,
+                  fraudulent transactions, or attempts
+                  to obtain money through deception.
+
+                </div>
+
+                <p className="text-muted">
+                  You are responsible for ensuring that
+                  the information you provide and the
+                  transactions you make on the platform
+                  are genuine and accurate.
+                </p>
+
+                <p className="text-muted">
+                  Providing false information or attempting
+                  to obtain money through fraudulent means
+                  may result in the suspension or closure
+                  of your account. Transactions associated
+                  with suspected fraudulent activity may
+                  be withheld while they are reviewed,
+                  subject to applicable law and our
+                  verification procedures.
+                </p>
+
+                <div className="border rounded-3 p-3 mb-4 bg-light">
+
+                  <div className="d-flex align-items-start">
+
+                    <span className="me-2">
+                      🔒
+                    </span>
+
+                    <div>
+                      <strong>
+                        Before you continue
+                      </strong>
+
+                      <div className="small text-muted mt-1">
+                        Make sure the investment amount
+                        and package selected are correct.
+                        Only continue if you understand
+                        the transaction you are making.
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+
+                {/* ACKNOWLEDGEMENT */}
+
+                <div className="form-check border rounded-3 p-3 mb-4">
+
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="investmentFraudAcknowledgement"
+                    checked={fraudAcknowledged}
+                    onChange={(e) =>
+                      setFraudAcknowledged(
+                        e.target.checked
+                      )
+                    }
+                  />
+
+                  <label
+                    className="form-check-label ms-2"
+                    htmlFor="investmentFraudAcknowledgement"
+                  >
+                    I understand and confirm that
+                    the information and transaction
+                    I am submitting are genuine and
+                    that I will not engage in fraudulent
+                    activity.
+                  </label>
+
+                </div>
+
+                {/* BUTTONS */}
+
+                <div className="d-grid gap-2">
+
+                  <button
+                    type="button"
+                    className="btn btn-danger btn-lg rounded-3"
+                    disabled={
+                      !fraudAcknowledged ||
+                      loading
+                    }
+                    onClick={confirmInvestment}
+                  >
+                    {loading
+                      ? "Processing..."
+                      : "I Understand — Continue Investment"}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-light border rounded-3"
+                    disabled={loading}
+                    onClick={() => {
+                      setShowFraudWarning(false);
+                      setFraudAcknowledged(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
+
+                </div>
+
+                <p className="text-center text-muted small mt-3 mb-0">
+                  Please review your investment details
+                  carefully before confirming.
+                </p>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

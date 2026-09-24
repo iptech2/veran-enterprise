@@ -63,7 +63,42 @@ export default function Privacy() {
 
             <hr />
 
-            <h4>4. Sharing of Information</h4>
+            <h4>4. Fraud and False Information</h4>
+
+            <p>
+              Veran Enterprise does not tolerate fraudulent activity,
+              false information, impersonation, or attempts to obtain
+              money or financial benefits through deception.
+            </p>
+
+            <p>
+              Users are required to provide accurate and truthful
+              information when creating an account, making deposits,
+              requesting withdrawals, or using any other service on
+              the platform.
+            </p>
+
+            <div className="alert alert-danger border-0 rounded-3">
+              <strong>Important Notice:</strong>
+              <br />
+              Providing false information or attempting to obtain money
+              through fraudulent means may result in the immediate
+              suspension or closure of your account. Any funds or
+              transactions associated with suspected fraudulent activity
+              may be withheld while the matter is reviewed, subject to
+              applicable law and our verification procedures.
+            </div>
+
+            <p className="mb-0">
+              Fraudulent activity may be reported to the relevant
+              authorities where required or appropriate. We reserve the
+              right to take reasonable measures to protect our users,
+              platform, and business from fraud and financial abuse.
+            </p>
+
+            <hr />
+
+            <h4>5. Sharing of Information</h4>
 
             <p>
               We do not sell or rent your personal information to third
@@ -74,7 +109,7 @@ export default function Privacy() {
 
             <hr />
 
-            <h4>5. Cookies</h4>
+            <h4>6. Cookies</h4>
 
             <p>
               Our website may use cookies to improve user experience,
@@ -83,7 +118,7 @@ export default function Privacy() {
 
             <hr />
 
-            <h4>6. Your Rights</h4>
+            <h4>7. Your Rights</h4>
 
             <ul>
               <li>Access your personal information.</li>
@@ -94,7 +129,7 @@ export default function Privacy() {
 
             <hr />
 
-            <h4>7. Contact Us</h4>
+            <h4>8. Contact Us</h4>
 
             <p>
               If you have any questions regarding this Privacy Policy,
