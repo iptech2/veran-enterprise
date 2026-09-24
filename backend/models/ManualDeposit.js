@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const manualDepositSchema = new mongoose.Schema(
   {
@@ -6,7 +6,6 @@ const manualDepositSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
 
     amount: {
@@ -24,26 +23,24 @@ const manualDepositSchema = new mongoose.Schema(
     tillNumber: {
       type: String,
       required: true,
-      trim: true,
+      default: "9207399",
     },
 
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
       default: "pending",
-      index: true,
     },
 
     reference: {
       type: String,
       unique: true,
-      sparse: true,
+      required: true,
     },
 
     adminNote: {
       type: String,
       default: "",
-      trim: true,
     },
 
     approvedBy: {
@@ -67,4 +64,7 @@ const manualDepositSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("ManualDeposit", manualDepositSchema);
+module.exports = mongoose.model(
+  "ManualDeposit",
+  manualDepositSchema
+);
