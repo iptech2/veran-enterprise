@@ -177,6 +177,9 @@
 // }
 
 
+
+
+
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import api from "../services/api";
@@ -197,7 +200,6 @@ export default function Wallet() {
   // ==========================
   const [manualAmount, setManualAmount] = useState("");
   const [manualPhone, setManualPhone] = useState("");
-  const [tillNumber, setTillNumber] = useState("");
   const [manualLoading, setManualLoading] = useState(false);
   const [manualDeposits, setManualDeposits] = useState([]);
 
@@ -289,7 +291,6 @@ export default function Wallet() {
 
           if (attempts >= 12) {
             clearInterval(interval);
-
             setCheckingPayment(false);
           }
         } catch (err) {
@@ -320,17 +321,13 @@ export default function Wallet() {
       );
     }
 
-    if (!tillNumber) {
-      return alert("Enter the Till Number.");
-    }
-
     try {
       setManualLoading(true);
 
       const res = await api.post("/manual-deposits", {
         amount: Number(manualAmount),
         phone: manualPhone.trim(),
-        tillNumber: tillNumber.trim(),
+        tillNumber: "9207399",
       });
 
       alert(
@@ -340,7 +337,6 @@ export default function Wallet() {
 
       setManualAmount("");
       setManualPhone("");
-      setTillNumber("");
 
       loadManualDeposits();
     } catch (err) {
@@ -398,153 +394,340 @@ export default function Wallet() {
     <>
       <Navbar />
 
-      <div className="container mt-4">
+      <div
+        className="container py-4"
+        style={{ maxWidth: "1100px" }}
+      >
 
         {/* ==========================
             WALLET BALANCE
         ========================== */}
-        <div className="card shadow border-0 p-4 mb-4">
+        <div className="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
 
-          <h4>Wallet Balance</h4>
+          <div className="card-body p-4">
 
-          <h1 className="text-success">
-            KES {balance.toLocaleString()}
-          </h1>
+            <div className="d-flex justify-content-between align-items-center">
 
-          {checkingPayment && (
-            <div className="alert alert-info mt-3 mb-0">
-              Waiting for M-Pesa confirmation...
+              <div>
+                <p className="text-muted mb-1">
+                  Available Wallet Balance
+                </p>
+
+                <h1 className="fw-bold text-success mb-0">
+                  KES {balance.toLocaleString()}
+                </h1>
+              </div>
+
+              <div
+                className="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center"
+                style={{
+                  width: "60px",
+                  height: "60px",
+                }}
+              >
+                <span
+                  className="text-success fw-bold"
+                  style={{ fontSize: "24px" }}
+                >
+                  K
+                </span>
+              </div>
+
             </div>
-          )}
 
-        </div>
-
-        {/* ==========================
-            STK PUSH DEPOSIT
-        ========================== */}
-        <div className="card shadow border-0 p-4 mb-4">
-
-          <h4 className="mb-2">
-            Deposit with M-Pesa
-          </h4>
-
-          <p className="text-muted">
-            Receive an M-Pesa STK Push on your phone
-            and complete the payment.
-          </p>
-
-          <input
-            type="number"
-            className="form-control mb-3"
-            placeholder="Amount"
-            value={amount}
-            onChange={(e) =>
-              setAmount(e.target.value)
-            }
-          />
-
-          <input
-            type="text"
-            className="form-control mb-3"
-            placeholder="07XXXXXXXX"
-            value={phone}
-            onChange={(e) =>
-              setPhone(e.target.value)
-            }
-          />
-
-          <div className="d-grid">
-
-            <button
-              className="btn btn-success"
-              disabled={
-                loading || checkingPayment
-              }
-              onClick={deposit}
-            >
-              {loading
-                ? "Sending STK..."
-                : "Deposit with M-Pesa"}
-            </button>
+            {checkingPayment && (
+              <div className="alert alert-info mt-4 mb-0 rounded-3">
+                <strong>Waiting for M-Pesa confirmation...</strong>
+                <br />
+                Please complete the payment on your phone.
+              </div>
+            )}
 
           </div>
 
         </div>
 
         {/* ==========================
-            MANUAL M-PESA DEPOSIT
+            STK PUSH
         ========================== */}
-        <div className="card shadow border-0 p-4 mb-4">
+        <div className="card border-0 shadow-sm rounded-4 mb-4">
 
-          <h4 className="mb-2">
-            Manual M-Pesa Deposit
-          </h4>
+          <div className="card-body p-4">
 
-          <p className="text-muted">
-            If STK Push is unavailable, pay manually
-            to the Veran Enterprise Till Number and
-            submit your payment details for verification.
-          </p>
+            <div className="mb-4">
+              <h4 className="fw-bold mb-1">
+                Deposit with M-Pesa
+              </h4>
 
-          <div className="alert alert-warning">
-            <strong>Important:</strong> Your wallet
-            will only be credited after an administrator
-            verifies and approves the payment.
+              <p className="text-muted mb-0">
+                Use STK Push to deposit money directly
+                into your wallet.
+              </p>
+            </div>
+
+            <div className="row">
+
+              <div className="col-md-6 mb-3">
+
+                <label className="form-label fw-semibold">
+                  Amount
+                </label>
+
+                <input
+                  type="number"
+                  className="form-control form-control-lg"
+                  placeholder="Enter amount"
+                  value={amount}
+                  onChange={(e) =>
+                    setAmount(e.target.value)
+                  }
+                />
+
+              </div>
+
+              <div className="col-md-6 mb-3">
+
+                <label className="form-label fw-semibold">
+                  M-Pesa Phone Number
+                </label>
+
+                <input
+                  type="text"
+                  className="form-control form-control-lg"
+                  placeholder="07XXXXXXXX"
+                  value={phone}
+                  onChange={(e) =>
+                    setPhone(e.target.value)
+                  }
+                />
+
+              </div>
+
+            </div>
+
+            <div className="d-grid">
+
+              <button
+                className="btn btn-success btn-lg rounded-3"
+                disabled={
+                  loading || checkingPayment
+                }
+                onClick={deposit}
+              >
+                {loading
+                  ? "Sending STK..."
+                  : "Deposit with M-Pesa"}
+              </button>
+
+            </div>
+
           </div>
 
-          <label className="form-label">
-            Amount
-          </label>
+        </div>
 
-          <input
-            type="number"
-            className="form-control mb-3"
-            placeholder="Enter amount"
-            value={manualAmount}
-            onChange={(e) =>
-              setManualAmount(e.target.value)
-            }
-          />
+        {/* ==========================
+            MANUAL M-PESA
+        ========================== */}
+        <div className="card border-0 shadow rounded-4 mb-4 overflow-hidden">
 
-          <label className="form-label">
-            Phone Used for M-Pesa Payment
-          </label>
+          {/* Header */}
+          <div
+            className="p-4 text-white"
+            style={{
+              background:
+                "linear-gradient(135deg, #198754, #146c43)",
+            }}
+          >
 
-          <input
-            type="text"
-            className="form-control mb-3"
-            placeholder="07XXXXXXXX"
-            value={manualPhone}
-            onChange={(e) =>
-              setManualPhone(e.target.value)
-            }
-          />
+            <div className="d-flex align-items-center">
 
-          <label className="form-label">
-            Till Number
-          </label>
+              <div
+                className="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3"
+                style={{
+                  width: "52px",
+                  height: "52px",
+                }}
+              >
+                <span
+                  className="fw-bold text-white"
+                  style={{ fontSize: "22px" }}
+                >
+                  M
+                </span>
+              </div>
 
-          <input
-            type="text"
-            className="form-control mb-3"
-            placeholder="Enter Till Number"
-            value={tillNumber}
-            onChange={(e) =>
-              setTillNumber(e.target.value)
-            }
-          />
+              <div>
+                <h4 className="fw-bold mb-1">
+                  Manual M-Pesa Deposit
+                </h4>
 
-          <div className="d-grid">
+                <p className="mb-0 opacity-75">
+                  Make a manual payment and submit it
+                  for verification.
+                </p>
+              </div>
 
-            <button
-              className="btn btn-primary"
-              disabled={manualLoading}
-              onClick={submitManualDeposit}
+            </div>
+
+          </div>
+
+          <div className="card-body p-4">
+
+            {/* VERAN ENTERPRISE TILL */}
+            <div
+              className="border rounded-4 p-4 mb-4 text-center"
+              style={{
+                backgroundColor: "#f8f9fa",
+              }}
             >
-              {manualLoading
-                ? "Submitting..."
-                : "Submit Manual Deposit"}
-            </button>
+
+              <p className="text-muted mb-1">
+                PAY TO
+              </p>
+
+              <h4 className="fw-bold mb-2">
+                VERAN ENTERPRISE
+              </h4>
+
+              <p className="text-muted mb-1">
+                M-Pesa Till Number
+              </p>
+
+              <h1
+                className="fw-bold text-success mb-2"
+                style={{
+                  letterSpacing: "3px",
+                }}
+              >
+                9207399
+              </h1>
+
+              <p className="small text-muted mb-0">
+                Use this Till Number when making your
+                manual M-Pesa payment.
+              </p>
+
+            </div>
+
+            {/* INSTRUCTIONS */}
+            <div className="alert alert-info rounded-3">
+
+              <strong>How to deposit manually:</strong>
+
+              <ol className="mb-0 mt-2">
+                <li>
+                  Open M-Pesa on your phone.
+                </li>
+
+                <li>
+                  Select <strong>Lipa na M-Pesa</strong>.
+                </li>
+
+                <li>
+                  Select <strong>Buy Goods and Services</strong>.
+                </li>
+
+                <li>
+                  Enter Till Number{" "}
+                  <strong>9207399</strong>.
+                </li>
+
+                <li>
+                  Enter the amount you want to deposit.
+                </li>
+
+                <li>
+                  Complete the M-Pesa payment.
+                </li>
+
+                <li>
+                  Enter the phone number used for payment
+                  below and submit the request.
+                </li>
+              </ol>
+
+            </div>
+
+            {/* FORM */}
+            <div className="row">
+
+              <div className="col-md-6 mb-3">
+
+                <label className="form-label fw-semibold">
+                  Amount Paid
+                </label>
+
+                <div className="input-group input-group-lg">
+
+                  <span className="input-group-text">
+                    KES
+                  </span>
+
+                  <input
+                    type="number"
+                    className="form-control"
+                    placeholder="Enter amount"
+                    value={manualAmount}
+                    onChange={(e) =>
+                      setManualAmount(
+                        e.target.value
+                      )
+                    }
+                  />
+
+                </div>
+
+              </div>
+
+              <div className="col-md-6 mb-3">
+
+                <label className="form-label fw-semibold">
+                  M-Pesa Phone Number
+                </label>
+
+                <input
+                  type="text"
+                  className="form-control form-control-lg"
+                  placeholder="07XXXXXXXX"
+                  value={manualPhone}
+                  onChange={(e) =>
+                    setManualPhone(
+                      e.target.value
+                    )
+                  }
+                />
+
+                <small className="text-muted">
+                  Enter the number used to make the
+                  M-Pesa payment.
+                </small>
+
+              </div>
+
+            </div>
+
+            <div className="d-grid mt-2">
+
+              <button
+                className="btn btn-primary btn-lg rounded-3"
+                disabled={manualLoading}
+                onClick={submitManualDeposit}
+              >
+                {manualLoading
+                  ? "Submitting Deposit..."
+                  : "Submit Deposit for Verification"}
+              </button>
+
+            </div>
+
+            <div className="text-center mt-3">
+
+              <small className="text-muted">
+                Your wallet will be credited after
+                Veran Enterprise verifies your payment.
+              </small>
+
+            </div>
 
           </div>
 
@@ -553,132 +736,172 @@ export default function Wallet() {
         {/* ==========================
             MANUAL DEPOSIT HISTORY
         ========================== */}
-        <div className="card shadow border-0 p-4 mb-4">
+        <div className="card border-0 shadow-sm rounded-4 mb-4">
 
-          <div className="d-flex justify-content-between align-items-center mb-3">
+          <div className="card-body p-4">
 
-            <h4 className="mb-0">
-              Manual Deposit Requests
-            </h4>
+            <div className="d-flex justify-content-between align-items-center mb-4">
 
-            <button
-              className="btn btn-sm btn-outline-primary"
-              onClick={loadManualDeposits}
-            >
-              Refresh
-            </button>
+              <div>
+                <h4 className="fw-bold mb-1">
+                  Deposit Requests
+                </h4>
+
+                <p className="text-muted mb-0">
+                  Track your manual M-Pesa deposits.
+                </p>
+              </div>
+
+              <button
+                className="btn btn-outline-primary btn-sm"
+                onClick={loadManualDeposits}
+              >
+                Refresh
+              </button>
+
+            </div>
+
+            {manualDeposits.length === 0 ? (
+
+              <div className="text-center py-4">
+
+                <div
+                  className="mb-3 mx-auto rounded-circle bg-light d-flex align-items-center justify-content-center"
+                  style={{
+                    width: "60px",
+                    height: "60px",
+                  }}
+                >
+                  <span className="text-muted">
+                    —
+                  </span>
+                </div>
+
+                <p className="text-muted mb-0">
+                  You have no manual deposit requests.
+                </p>
+
+              </div>
+
+            ) : (
+
+              <div className="table-responsive">
+
+                <table className="table align-middle">
+
+                  <thead>
+                    <tr>
+                      <th>Amount</th>
+                      <th>Phone</th>
+                      <th>Till</th>
+                      <th>Reference</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+
+                    {manualDeposits.map((deposit) => (
+
+                      <tr key={deposit._id}>
+
+                        <td className="fw-semibold">
+                          KES{" "}
+                          {Number(
+                            deposit.amount
+                          ).toLocaleString()}
+                        </td>
+
+                        <td>
+                          {deposit.phone}
+                        </td>
+
+                        <td>
+                          {deposit.tillNumber}
+                        </td>
+
+                        <td>
+                          <small className="text-muted">
+                            {deposit.reference}
+                          </small>
+                        </td>
+
+                        <td>
+
+                          <span
+                            className={`badge rounded-pill px-3 py-2 ${getStatusClass(
+                              deposit.status
+                            )}`}
+                          >
+                            {deposit.status}
+                          </span>
+
+                        </td>
+
+                        <td>
+                          <small className="text-muted">
+                            {new Date(
+                              deposit.createdAt
+                            ).toLocaleString()}
+                          </small>
+                        </td>
+
+                      </tr>
+
+                    ))}
+
+                  </tbody>
+
+                </table>
+
+              </div>
+
+            )}
 
           </div>
-
-          {manualDeposits.length === 0 ? (
-
-            <div className="alert alert-light border mb-0">
-              You have no manual deposit requests.
-            </div>
-
-          ) : (
-
-            <div className="table-responsive">
-
-              <table className="table table-bordered align-middle">
-
-                <thead>
-                  <tr>
-                    <th>Amount</th>
-                    <th>Phone</th>
-                    <th>Till</th>
-                    <th>Reference</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-
-                  {manualDeposits.map((deposit) => (
-
-                    <tr key={deposit._id}>
-
-                      <td>
-                        KES{" "}
-                        {Number(
-                          deposit.amount
-                        ).toLocaleString()}
-                      </td>
-
-                      <td>
-                        {deposit.phone}
-                      </td>
-
-                      <td>
-                        {deposit.tillNumber}
-                      </td>
-
-                      <td>
-                        <small>
-                          {deposit.reference}
-                        </small>
-                      </td>
-
-                      <td>
-                        <span
-                          className={`badge ${getStatusClass(
-                            deposit.status
-                          )}`}
-                        >
-                          {deposit.status}
-                        </span>
-                      </td>
-
-                      <td>
-                        <small>
-                          {new Date(
-                            deposit.createdAt
-                          ).toLocaleString()}
-                        </small>
-                      </td>
-
-                    </tr>
-
-                  ))}
-
-                </tbody>
-
-              </table>
-
-            </div>
-
-          )}
 
         </div>
 
         {/* ==========================
             WITHDRAW
         ========================== */}
-        <div className="card shadow border-0 p-4 mb-4">
+        <div className="card border-0 shadow-sm rounded-4 mb-5">
 
-          <h4 className="mb-3">
-            Withdraw Money
-          </h4>
+          <div className="card-body p-4">
 
-          <input
-            type="number"
-            className="form-control mb-3"
-            placeholder="Amount"
-            value={amount}
-            onChange={(e) =>
-              setAmount(e.target.value)
-            }
-          />
+            <h4 className="fw-bold mb-3">
+              Withdraw Money
+            </h4>
 
-          <div className="d-grid">
+            <div className="row">
 
-            <button
-              className="btn btn-danger"
-              onClick={withdraw}
-            >
-              Withdraw
-            </button>
+              <div className="col-md-8 mb-3">
+
+                <input
+                  type="number"
+                  className="form-control form-control-lg"
+                  placeholder="Enter withdrawal amount"
+                  value={amount}
+                  onChange={(e) =>
+                    setAmount(e.target.value)
+                  }
+                />
+
+              </div>
+
+              <div className="col-md-4 mb-3">
+
+                <button
+                  className="btn btn-danger btn-lg w-100 rounded-3"
+                  onClick={withdraw}
+                >
+                  Withdraw
+                </button>
+
+              </div>
+
+            </div>
 
           </div>
 
