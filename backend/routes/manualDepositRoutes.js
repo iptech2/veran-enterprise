@@ -8,7 +8,7 @@ const {
   rejectManualDeposit,
 } = require("../controllers/manualDepositController");
 
-const authMiddleware = require("../middleware/authMiddleware");
+const authMiddleware = require("../middleware/protect");
 const adminMiddleware = require("../middleware/adminMiddleware");
 
 const router = express.Router();
