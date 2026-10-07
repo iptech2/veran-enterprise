@@ -1,3 +1,1693 @@
+// import { useEffect, useState } from "react";
+// import Navbar from "../components/Navbar";
+// import api from "../services/api";
+
+// export default function Dashboard() {
+//   const [balance, setBalance] = useState(0);
+//   const [packages, setPackages] = useState([]);
+//   const [investments, setInvestments] = useState([]);
+//   const [amount, setAmount] = useState("");
+//   const [selectedPackage, setSelectedPackage] = useState("");
+//   const [loading, setLoading] = useState(false);
+//   const [withdrawingInvestmentId, setWithdrawingInvestmentId] =
+//     useState(null);
+
+//   // Fraud warning
+//   const [showFraudWarning, setShowFraudWarning] = useState(false);
+//   const [fraudAcknowledged, setFraudAcknowledged] = useState(false);
+
+//   /* ===========================
+//       LOAD DASHBOARD
+//   =========================== */
+
+//   const loadDashboard = async () => {
+//     try {
+//       setLoading(true);
+
+//       const res = await api.get("/dashboard");
+
+//       console.log("Dashboard:", res.data);
+
+//       setBalance(Number(res.data.walletBalance) || 0);
+
+//       setPackages(
+//         Array.isArray(res.data.packages)
+//           ? res.data.packages
+//           : []
+//       );
+
+//       setInvestments(
+//         Array.isArray(res.data.investments)
+//           ? res.data.investments
+//           : []
+//       );
+//     } catch (err) {
+//       console.log(
+//         "Dashboard Error:",
+//         err.response?.data || err.message
+//       );
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     loadDashboard();
+//   }, []);
+
+//   /* ===========================
+//       INVESTMENT BUTTON
+//   =========================== */
+
+//   const invest = () => {
+//     if (!selectedPackage) {
+//       return alert("Please select a package.");
+//     }
+
+//     if (!amount || Number(amount) <= 0) {
+//       return alert("Enter a valid amount.");
+//     }
+
+//     const selected = packages.find(
+//       (pkg) => pkg._id === selectedPackage
+//     );
+
+//     if (selected) {
+//       if (
+//         Number(amount) <
+//         Number(selected.minAmount)
+//       ) {
+//         return alert(
+//           `Minimum investment for ${selected.name} is KES ${Number(
+//             selected.minAmount
+//           ).toLocaleString()}.`
+//         );
+//       }
+
+//       if (
+//         Number(amount) >
+//         Number(selected.maxAmount)
+//       ) {
+//         return alert(
+//           `Maximum investment for ${selected.name} is KES ${Number(
+//             selected.maxAmount
+//           ).toLocaleString()}.`
+//         );
+//       }
+
+//       if (Number(amount) > Number(balance)) {
+//         return alert(
+//           "Insufficient wallet balance. Please deposit funds before investing."
+//         );
+//       }
+//     }
+
+//     setFraudAcknowledged(false);
+//     setShowFraudWarning(true);
+//   };
+
+//   /* ===========================
+//       CONFIRM INVESTMENT
+//   =========================== */
+
+//   const confirmInvestment = async () => {
+//     if (!fraudAcknowledged) {
+//       return alert(
+//         "Please confirm that you understand and agree to the fraud warning before continuing."
+//       );
+//     }
+
+//     try {
+//       setLoading(true);
+
+//       const res = await api.post(
+//         "/investments/create",
+//         {
+//           packageId: selectedPackage,
+//           amount: Number(amount),
+//         }
+//       );
+
+//       alert(
+//         res.data.message ||
+//           "Investment successful"
+//       );
+
+//       setAmount("");
+//       setSelectedPackage("");
+//       setShowFraudWarning(false);
+//       setFraudAcknowledged(false);
+
+//       await loadDashboard();
+//     } catch (err) {
+//       alert(
+//         err.response?.data?.message ||
+//           "Investment failed"
+//       );
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   /* ===========================
+//       WITHDRAW LOCKED PROFIT
+//   =========================== */
+
+//   const withdrawProfit = async (investmentId) => {
+//     if (!investmentId) {
+//       return;
+//     }
+
+//     const confirmed = window.confirm(
+//       "Are you sure you want to withdraw your available investment profit?"
+//     );
+
+//     if (!confirmed) {
+//       return;
+//     }
+
+//     try {
+//       setWithdrawingInvestmentId(investmentId);
+
+//       const res = await api.post(
+//         `/investments/${investmentId}/withdraw-profit`
+//       );
+
+//       alert(
+//         res.data.message ||
+//           "Profit withdrawn successfully."
+//       );
+
+//       await loadDashboard();
+//     } catch (err) {
+//       alert(
+//         err.response?.data?.message ||
+//           "Profit withdrawal failed."
+//       );
+//     } finally {
+//       setWithdrawingInvestmentId(null);
+//     }
+//   };
+
+//   /* ===========================
+//       PACKAGE COLORS
+//   =========================== */
+
+//   const packageStyles = [
+//     {
+//       gradient:
+//         "linear-gradient(135deg, #0d6efd, #084298)",
+//       light:
+//         "linear-gradient(135deg, #e7f1ff, #f5f9ff)",
+//       icon: "🚀",
+//       badge: "Starter",
+//       shadow: "rgba(13, 110, 253, 0.25)",
+//     },
+//     {
+//       gradient:
+//         "linear-gradient(135deg, #198754, #0f5132)",
+//       light:
+//         "linear-gradient(135deg, #e9f7ef, #f6fffa)",
+//       icon: "📈",
+//       badge: "Growth",
+//       shadow: "rgba(25, 135, 84, 0.25)",
+//     },
+//     {
+//       gradient:
+//         "linear-gradient(135deg, #6f42c1, #432874)",
+//       light:
+//         "linear-gradient(135deg, #f1ebff, #faf8ff)",
+//       icon: "💎",
+//       badge: "Premium",
+//       shadow: "rgba(111, 66, 193, 0.25)",
+//     },
+//     {
+//       gradient:
+//         "linear-gradient(135deg, #fd7e14, #b94700)",
+//       light:
+//         "linear-gradient(135deg, #fff1e6, #fffaf5)",
+//       icon: "🔥",
+//       badge: "Advanced",
+//       shadow: "rgba(253, 126, 20, 0.25)",
+//     },
+//     {
+//       gradient:
+//         "linear-gradient(135deg, #d63384, #84235a)",
+//       light:
+//         "linear-gradient(135deg, #ffeaf4, #fff8fb)",
+//       icon: "🌟",
+//       badge: "Elite",
+//       shadow: "rgba(214, 51, 132, 0.25)",
+//     },
+//   ];
+
+//   const getPackageStyle = (index) => {
+//     return packageStyles[
+//       index % packageStyles.length
+//     ];
+//   };
+
+//   /* ===========================
+//       STATUS BADGE
+//   =========================== */
+
+//   const getInvestmentStatus = (status) => {
+//     switch (status?.toLowerCase()) {
+//       case "active":
+//         return "bg-success";
+
+//       case "completed":
+//         return "bg-primary";
+
+//       case "pending":
+//         return "bg-warning text-dark";
+
+//       case "cancelled":
+//       case "rejected":
+//         return "bg-danger";
+
+//       default:
+//         return "bg-secondary";
+//     }
+//   };
+
+//   const formatStatus = (status) => {
+//     if (!status) return "Unknown";
+
+//     return (
+//       status.charAt(0).toUpperCase() +
+//       status.slice(1)
+//     );
+//   };
+
+//   return (
+//     <>
+//       <Navbar />
+
+//       <div
+//         className="container-fluid px-3 px-md-4 px-lg-5 py-4"
+//         style={{
+//           background:
+//             "linear-gradient(180deg, #f8fafc 0%, #ffffff 45%)",
+//           minHeight: "100vh",
+//         }}
+//       >
+
+//         {/* =========================================
+//             DASHBOARD HEADER
+//         ========================================== */}
+
+//         <div className="container-fluid mb-4">
+//           <div className="row align-items-center">
+
+//             <div className="col-md-8">
+
+//               <span className="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 mb-2">
+//                 VERAN ENTERPRISE
+//               </span>
+
+//               <h1 className="fw-bold mb-2">
+//                 Investment Dashboard
+//               </h1>
+
+//               <p className="text-muted mb-0">
+//                 Manage your wallet, explore investment
+//                 packages and track your investments.
+//               </p>
+
+//             </div>
+
+//             <div className="col-md-4 text-md-end mt-3 mt-md-0">
+
+//               <span className="text-muted small">
+//                 Your funds at a glance
+//               </span>
+
+//             </div>
+
+//           </div>
+//         </div>
+
+
+//         {/* =========================================
+//             WALLET SUMMARY
+//         ========================================== */}
+
+//         <div className="container-fluid mb-5">
+
+//           <div
+//             className="card border-0 rounded-4 overflow-hidden"
+//             style={{
+//               background:
+//                 "linear-gradient(135deg, #0f5132, #198754, #20c997)",
+//               boxShadow:
+//                 "0 15px 40px rgba(25, 135, 84, 0.20)",
+//             }}
+//           >
+
+//             <div className="card-body p-4 p-md-5 text-white">
+
+//               <div className="row align-items-center">
+
+//                 <div className="col-md-7">
+
+//                   <div className="d-flex align-items-center mb-3">
+
+//                     <div
+//                       className="rounded-circle d-flex align-items-center justify-content-center me-3"
+//                       style={{
+//                         width: "55px",
+//                         height: "55px",
+//                         background:
+//                           "rgba(255,255,255,0.18)",
+//                         fontSize: "25px",
+//                       }}
+//                     >
+//                       💰
+//                     </div>
+
+//                     <div>
+
+//                       <p className="mb-0 opacity-75">
+//                         Available Wallet Balance
+//                       </p>
+
+//                       <h1 className="fw-bold mb-0">
+//                         KES{" "}
+//                         {Number(
+//                           balance
+//                         ).toLocaleString()}
+//                       </h1>
+
+//                     </div>
+
+//                   </div>
+
+//                   <p className="mb-0 opacity-75">
+//                     Use your available balance to
+//                     invest in one of our packages.
+//                   </p>
+
+//                 </div>
+
+
+//                 <div className="col-md-5 text-md-end mt-4 mt-md-0">
+
+//                   <div
+//                     className="d-inline-block rounded-4 p-3"
+//                     style={{
+//                       background:
+//                         "rgba(255,255,255,0.12)",
+//                     }}
+//                   >
+
+//                     <small className="d-block opacity-75">
+//                       Account Status
+//                     </small>
+
+//                     <strong>
+//                       ✓ Active
+//                     </strong>
+
+//                   </div>
+
+//                 </div>
+
+//               </div>
+
+//             </div>
+
+//           </div>
+
+//         </div>
+
+
+//         {/* =========================================
+//             INVESTMENT SECTION
+//         ========================================== */}
+
+//         <div className="container-fluid mb-5">
+
+//           <div className="text-center mb-5">
+
+//             <span className="badge bg-dark rounded-pill px-3 py-2 mb-3">
+//               INVESTMENT OPTIONS
+//             </span>
+
+//             <h2 className="fw-bold">
+//               Choose Your Investment Package
+//             </h2>
+
+//             <p
+//               className="text-muted mx-auto mb-0"
+//               style={{ maxWidth: "650px" }}
+//             >
+//               Select a package that matches your
+//               investment amount and preferred duration.
+//             </p>
+
+//           </div>
+
+
+//           {/* =========================================
+//               INVESTMENT AMOUNT
+//           ========================================== */}
+
+//           <div
+//             className="card border-0 shadow-sm rounded-4 mb-4 mx-auto"
+//             style={{ maxWidth: "850px" }}
+//           >
+
+//             <div className="card-body p-4">
+
+//               <label className="form-label fw-bold">
+//                 How much would you like to invest?
+//               </label>
+
+//               <div className="input-group input-group-lg">
+
+//                 <span className="input-group-text fw-bold">
+//                   KES
+//                 </span>
+
+//                 <input
+//                   type="number"
+//                   className="form-control"
+//                   placeholder="Enter investment amount"
+//                   value={amount}
+//                   onChange={(e) =>
+//                     setAmount(e.target.value)
+//                   }
+//                 />
+
+//               </div>
+
+//               <div className="d-flex justify-content-between mt-2">
+
+//                 <small className="text-muted">
+//                   Available: KES{" "}
+//                   {Number(
+//                     balance
+//                   ).toLocaleString()}
+//                 </small>
+
+//                 {selectedPackage && (
+//                   <small className="text-success fw-semibold">
+//                     Package selected ✓
+//                   </small>
+//                 )}
+
+//               </div>
+
+//             </div>
+
+//           </div>
+
+
+//           {/* =========================================
+//               INVEST NOW BUTTON
+//           ========================================== */}
+
+//           <div className="text-center mb-5">
+
+//             <button
+//               type="button"
+//               className="btn btn-success btn-lg px-5 py-3 rounded-pill fw-bold shadow"
+//               onClick={invest}
+//               disabled={loading}
+//             >
+//               {loading
+//                 ? "Processing..."
+//                 : "🚀 Invest Now"}
+//             </button>
+
+//             <p className="text-muted small mt-3 mb-0">
+//               Select a package and enter an amount
+//               within its investment range.
+//             </p>
+
+//           </div>
+
+
+//           {/* =========================================
+//               PACKAGE CARDS
+//           ========================================== */}
+
+//           {packages.length === 0 ? (
+
+//             <div className="alert alert-warning border-0 rounded-4 shadow-sm text-center py-4">
+
+//               <h5 className="fw-bold">
+//                 No investment packages found
+//               </h5>
+
+//               <p className="mb-0">
+//                 Investment packages are currently
+//                 unavailable.
+//               </p>
+
+//             </div>
+
+//           ) : (
+
+//             <div className="row g-4">
+
+//               {packages.map((pkg, index) => {
+
+//                 const style =
+//                   getPackageStyle(index);
+
+//                 const selected =
+//                   selectedPackage === pkg._id;
+
+//                 const isLockedProfit =
+//                   pkg.investmentType ===
+//                   "locked_profit";
+
+//                 return (
+
+//                   <div
+//                     className="col-sm-6 col-lg-4 col-xl-3"
+//                     key={pkg._id}
+//                   >
+
+//                     <div
+//                       className="h-100 position-relative"
+//                       style={{
+//                         transform: selected
+//                           ? "translateY(-8px)"
+//                           : "translateY(0)",
+//                         transition:
+//                           "all 0.25s ease",
+//                       }}
+//                     >
+
+//                       {selected && (
+//                         <div
+//                           className="position-absolute top-0 start-50 translate-middle badge rounded-pill px-3 py-2 text-white"
+//                           style={{
+//                             background:
+//                               style.gradient,
+//                             zIndex: 5,
+//                           }}
+//                         >
+//                           ✓ Selected
+//                         </div>
+//                       )}
+
+//                       <div
+//                         className="card h-100 border-0 overflow-hidden"
+//                         onClick={() =>
+//                           setSelectedPackage(
+//                             pkg._id
+//                           )
+//                         }
+//                         style={{
+//                           cursor: "pointer",
+//                           borderRadius: "22px",
+//                           background:
+//                             style.light,
+//                           boxShadow: selected
+//                             ? `0 18px 45px ${style.shadow}`
+//                             : "0 8px 25px rgba(0,0,0,0.08)",
+//                           transition:
+//                             "all 0.25s ease",
+//                         }}
+//                       >
+
+//                         {/* PACKAGE HEADER */}
+
+//                         <div
+//                           className="p-4 text-white position-relative overflow-hidden"
+//                           style={{
+//                             background:
+//                               style.gradient,
+//                             minHeight: "150px",
+//                           }}
+//                         >
+
+//                           <div
+//                             className="position-absolute"
+//                             style={{
+//                               width: "140px",
+//                               height: "140px",
+//                               borderRadius: "50%",
+//                               background:
+//                                 "rgba(255,255,255,0.08)",
+//                               top: "-60px",
+//                               right: "-40px",
+//                             }}
+//                           />
+
+//                           <div
+//                             className="position-absolute"
+//                             style={{
+//                               width: "80px",
+//                               height: "80px",
+//                               borderRadius: "50%",
+//                               background:
+//                                 "rgba(255,255,255,0.07)",
+//                               bottom: "-30px",
+//                               left: "-20px",
+//                             }}
+//                           />
+
+//                           <div className="position-relative">
+
+//                             <div className="d-flex justify-content-between align-items-start">
+
+//                               <div
+//                                 className="rounded-3 d-flex align-items-center justify-content-center"
+//                                 style={{
+//                                   width: "48px",
+//                                   height: "48px",
+//                                   background:
+//                                     "rgba(255,255,255,0.16)",
+//                                   fontSize: "24px",
+//                                 }}
+//                               >
+//                                 {style.icon}
+//                               </div>
+
+//                               <div className="d-flex flex-column align-items-end gap-1">
+
+//                                 <span className="badge bg-white text-dark rounded-pill">
+//                                   {style.badge}
+//                                 </span>
+
+//                                 {isLockedProfit && (
+//                                   <span className="badge bg-warning text-dark rounded-pill">
+//                                     🔒 Locked Profit
+//                                   </span>
+//                                 )}
+
+//                               </div>
+
+//                             </div>
+
+//                             <h4 className="fw-bold mt-3 mb-0">
+//                               {pkg.name}
+//                             </h4>
+
+//                           </div>
+
+//                         </div>
+
+
+//                         {/* PACKAGE BODY */}
+
+//                         <div className="card-body p-4">
+
+//                           <div className="text-center mb-4">
+
+//                             <small className="text-muted d-block mb-1">
+//                               RETURN ON INVESTMENT
+//                             </small>
+
+//                             <div
+//                               className="fw-bold"
+//                               style={{
+//                                 fontSize: "42px",
+//                                 background:
+//                                   style.gradient,
+//                                 WebkitBackgroundClip:
+//                                   "text",
+//                                 WebkitTextFillColor:
+//                                   "transparent",
+//                               }}
+//                             >
+//                               {pkg.roi}%
+//                             </div>
+
+//                           </div>
+
+
+//                           <div className="mb-4">
+
+//                             <div className="d-flex justify-content-between align-items-center border-bottom py-2">
+
+//                               <span className="text-muted">
+//                                 Duration
+//                               </span>
+
+//                               <strong>
+//                                 {pkg.duration} Days
+//                               </strong>
+
+//                             </div>
+
+//                             <div className="d-flex justify-content-between align-items-center border-bottom py-2">
+
+//                               <span className="text-muted">
+//                                 Minimum
+//                               </span>
+
+//                               <strong>
+//                                 KES{" "}
+//                                 {Number(
+//                                   pkg.minAmount
+//                                 ).toLocaleString()}
+//                               </strong>
+
+//                             </div>
+
+//                             <div className="d-flex justify-content-between align-items-center py-2">
+
+//                               <span className="text-muted">
+//                                 Maximum
+//                               </span>
+
+//                               <strong>
+//                                 KES{" "}
+//                                 {Number(
+//                                   pkg.maxAmount
+//                                 ).toLocaleString()}
+//                               </strong>
+
+//                             </div>
+
+//                           </div>
+
+
+//                           {/* LOCKED PROFIT DETAILS */}
+
+//                           {isLockedProfit && (
+//                             <div className="alert alert-warning border-0 rounded-3 small">
+
+//                               <div className="fw-bold mb-1">
+//                                 🔒 Principal Locked
+//                               </div>
+
+//                               <div>
+//                                 Your invested principal
+//                                 remains locked. Profit is
+//                                 released according to the
+//                                 configured withdrawal
+//                                 schedule.
+//                               </div>
+
+//                               {Array.isArray(
+//                                 pkg.profitWithdrawalDays
+//                               ) &&
+//                                 pkg.profitWithdrawalDays
+//                                   .length > 0 && (
+//                                   <div className="mt-2">
+//                                     <strong>
+//                                       Profit withdrawal:
+//                                     </strong>{" "}
+//                                     Day{" "}
+//                                     {pkg.profitWithdrawalDays.join(
+//                                       ", "
+//                                     )}
+//                                   </div>
+//                                 )}
+
+//                             </div>
+//                           )}
+
+
+//                           <button
+//                             type="button"
+//                             className="btn w-100 rounded-3 fw-semibold"
+//                             style={{
+//                               background:
+//                                 selected
+//                                   ? style.gradient
+//                                   : "white",
+//                               color: selected
+//                                 ? "white"
+//                                 : "#212529",
+//                               border: selected
+//                                 ? "none"
+//                                 : "1px solid #dee2e6",
+//                             }}
+//                             onClick={(e) => {
+//                               e.stopPropagation();
+
+//                               setSelectedPackage(
+//                                 pkg._id
+//                               );
+//                             }}
+//                           >
+//                             {selected
+//                               ? "✓ Package Selected"
+//                               : "Select Package"}
+//                           </button>
+
+//                         </div>
+
+//                       </div>
+
+//                     </div>
+
+//                   </div>
+//                 );
+//               })}
+
+//             </div>
+//           )}
+
+//         </div>
+
+
+//         {/* =========================================
+//             MY INVESTMENTS
+//         ========================================== */}
+
+//         <div className="container-fluid">
+
+//           <div className="card border-0 shadow-sm rounded-4">
+
+//             <div className="card-body p-4 p-md-5">
+
+//               <div className="d-flex justify-content-between align-items-center mb-4">
+
+//                 <div>
+
+//                   <span className="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 mb-2">
+//                     PORTFOLIO
+//                   </span>
+
+//                   <h3 className="fw-bold mb-1">
+//                     My Investments
+//                   </h3>
+
+//                   <p className="text-muted mb-0">
+//                     Track your active and completed
+//                     investments.
+//                   </p>
+
+//                 </div>
+
+//                 <span className="badge bg-light text-dark border px-3 py-2">
+//                   {investments.length}{" "}
+//                   {investments.length === 1
+//                     ? "Investment"
+//                     : "Investments"}
+//                 </span>
+
+//               </div>
+
+
+//               {investments.length === 0 ? (
+
+//                 <div className="text-center py-5">
+
+//                   <div
+//                     className="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3"
+//                     style={{
+//                       width: "75px",
+//                       height: "75px",
+//                       fontSize: "32px",
+//                     }}
+//                   >
+//                     📊
+//                   </div>
+
+//                   <h5 className="fw-bold">
+//                     No investments yet
+//                   </h5>
+
+//                   <p className="text-muted mb-0">
+//                     Choose an investment package
+//                     above to get started.
+//                   </p>
+
+//                 </div>
+
+//               ) : (
+
+//                 <div className="row g-4">
+
+//                   {investments.map((inv) => {
+
+//                     // =================================================
+//                     // GENERIC LOCKED-PROFIT CHECK
+//                     // =================================================
+
+//                     const isLockedProfit =
+//                       inv.package?.investmentType ===
+//                       "locked_profit";
+
+//                     const daysCompleted =
+//                       Number(
+//                         inv.daysCompleted || 0
+//                       );
+
+//                     const duration =
+//                       Number(
+//                         inv.duration || 30
+//                       );
+
+//                     const progress =
+//                       duration > 0
+//                         ? Math.min(
+//                             100,
+//                             (daysCompleted /
+//                               duration) *
+//                               100
+//                           )
+//                         : 0;
+
+//                     const profitAvailable =
+//                       Number(
+//                         inv.profitAvailable || 0
+//                       );
+
+//                     const profitEarned =
+//                       Number(
+//                         inv.profitEarned || 0
+//                       );
+
+//                     const profitWithdrawn =
+//                       Number(
+//                         inv.profitWithdrawn || 0
+//                       );
+
+//                     const dailyProfit =
+//                       Number(
+//                         inv.dailyProfit || 0
+//                       );
+
+//                     const totalProfit =
+//                       Number(
+//                         inv.profit || 0
+//                       );
+
+//                     const isWithdrawing =
+//                       withdrawingInvestmentId ===
+//                       inv._id;
+
+//                     const withdrawalDays =
+//                       Array.isArray(
+//                         inv.package
+//                           ?.profitWithdrawalDays
+//                       )
+//                         ? inv.package.profitWithdrawalDays
+//                             .map(Number)
+//                             .filter(
+//                               (day) =>
+//                                 !isNaN(day) &&
+//                                 day > 0 &&
+//                                 day <= duration
+//                             )
+//                             .sort(
+//                               (a, b) => a - b
+//                             )
+//                         : [];
+
+//                     return (
+
+//                       <div
+//                         className="col-md-6 col-xl-4"
+//                         key={inv._id}
+//                       >
+
+//                         <div className="border rounded-4 p-4 h-100">
+
+//                           {/* =================================
+//                               INVESTMENT CARD HEADER
+//                           ================================= */}
+
+//                           <div className="d-flex justify-content-between align-items-start mb-3">
+
+//                             <div>
+
+//                               <small className="text-muted">
+//                                 Package
+//                               </small>
+
+//                               <h5 className="fw-bold mb-0">
+//                                 {inv.package?.name ||
+//                                   "Package"}
+//                               </h5>
+
+//                               {isLockedProfit && (
+//                                 <span className="badge bg-warning text-dark rounded-pill mt-2">
+//                                   🔒 Locked Profit
+//                                 </span>
+//                               )}
+
+//                             </div>
+
+//                             <span
+//                               className={`badge ${getInvestmentStatus(
+//                                 inv.status
+//                               )} rounded-pill`}
+//                             >
+//                               {formatStatus(
+//                                 inv.status
+//                               )}
+//                             </span>
+
+//                           </div>
+
+
+//                           {/* =================================
+//                               INVESTMENT AMOUNT
+//                           ================================= */}
+
+//                           <div className="mb-3">
+
+//                             <small className="text-muted d-block">
+//                               Investment Amount
+//                             </small>
+
+//                             <h4 className="fw-bold mb-0">
+//                               KES{" "}
+//                               {Number(
+//                                 inv.amount || 0
+//                               ).toLocaleString()}
+//                             </h4>
+
+//                           </div>
+
+
+//                           {/* =================================
+//                               ROI + TOTAL PROFIT
+//                           ================================= */}
+
+//                           <div className="row g-2">
+
+//                             <div className="col-6">
+
+//                               <div className="bg-light rounded-3 p-3">
+
+//                                 <small className="text-muted d-block">
+//                                   ROI
+//                                 </small>
+
+//                                 <strong className="text-success">
+//                                   {inv.roi}%
+//                                 </strong>
+
+//                               </div>
+
+//                             </div>
+
+
+//                             <div className="col-6">
+
+//                               <div className="bg-light rounded-3 p-3">
+
+//                                 <small className="text-muted d-block">
+//                                   Profit
+//                                 </small>
+
+//                                 <strong className="text-success">
+//                                   KES{" "}
+//                                   {totalProfit.toLocaleString(
+//                                     undefined,
+//                                     {
+//                                       minimumFractionDigits:
+//                                         2,
+//                                       maximumFractionDigits:
+//                                         2,
+//                                     }
+//                                   )}
+//                                 </strong>
+
+//                               </div>
+
+//                             </div>
+
+//                           </div>
+
+
+//                           <hr />
+
+
+//                           {/* =================================
+//                               DATES
+//                           ================================= */}
+
+//                           <div className="small">
+
+//                             <div className="d-flex justify-content-between mb-2">
+
+//                               <span className="text-muted">
+//                                 Start
+//                               </span>
+
+//                               <strong>
+//                                 {inv.startDate
+//                                   ? new Date(
+//                                       inv.startDate
+//                                     ).toLocaleDateString()
+//                                   : "-"}
+//                               </strong>
+
+//                             </div>
+
+
+//                             <div className="d-flex justify-content-between">
+
+//                               <span className="text-muted">
+//                                 End
+//                               </span>
+
+//                               <strong>
+//                                 {inv.endDate
+//                                   ? new Date(
+//                                       inv.endDate
+//                                     ).toLocaleDateString()
+//                                   : "-"}
+//                               </strong>
+
+//                             </div>
+
+//                           </div>
+
+
+//                           {/* =================================
+//                               LOCKED-PROFIT INVESTMENT
+//                           ================================= */}
+
+//                           {isLockedProfit && (
+
+//                             <>
+
+//                               <hr />
+
+//                               {/* PROGRESS */}
+
+//                               <div className="mb-3">
+
+//                                 <div className="d-flex justify-content-between align-items-center mb-2">
+
+//                                   <span className="text-muted small">
+//                                     Investment Progress
+//                                   </span>
+
+//                                   <strong className="small">
+//                                     {daysCompleted} /{" "}
+//                                     {duration} Days
+//                                   </strong>
+
+//                                 </div>
+
+//                                 <div
+//                                   className="progress"
+//                                   style={{
+//                                     height: "10px",
+//                                     borderRadius:
+//                                       "10px",
+//                                   }}
+//                                 >
+
+//                                   <div
+//                                     className="progress-bar bg-success"
+//                                     role="progressbar"
+//                                     style={{
+//                                       width: `${progress}%`,
+//                                     }}
+//                                   />
+
+//                                 </div>
+
+//                               </div>
+
+
+//                               {/* PROFIT INFORMATION */}
+
+//                               <div className="bg-light rounded-3 p-3 mb-3">
+
+//                                 <div className="d-flex justify-content-between mb-2">
+
+//                                   <span className="text-muted">
+//                                     Daily Profit
+//                                   </span>
+
+//                                   <strong className="text-success">
+//                                     KES{" "}
+//                                     {dailyProfit.toLocaleString(
+//                                       undefined,
+//                                       {
+//                                         minimumFractionDigits:
+//                                           2,
+//                                         maximumFractionDigits:
+//                                           2,
+//                                       }
+//                                     )}
+//                                   </strong>
+
+//                                 </div>
+
+
+//                                 <div className="d-flex justify-content-between mb-2">
+
+//                                   <span className="text-muted">
+//                                     Profit Earned
+//                                   </span>
+
+//                                   <strong>
+//                                     KES{" "}
+//                                     {profitEarned.toLocaleString(
+//                                       undefined,
+//                                       {
+//                                         minimumFractionDigits:
+//                                           2,
+//                                         maximumFractionDigits:
+//                                           2,
+//                                       }
+//                                     )}
+//                                   </strong>
+
+//                                 </div>
+
+
+//                                 <div className="d-flex justify-content-between mb-2">
+
+//                                   <span className="text-muted">
+//                                     Profit Withdrawn
+//                                   </span>
+
+//                                   <strong>
+//                                     KES{" "}
+//                                     {profitWithdrawn.toLocaleString(
+//                                       undefined,
+//                                       {
+//                                         minimumFractionDigits:
+//                                           2,
+//                                         maximumFractionDigits:
+//                                           2,
+//                                       }
+//                                     )}
+//                                   </strong>
+
+//                                 </div>
+
+
+//                                 <div className="d-flex justify-content-between">
+
+//                                   <span className="text-muted">
+//                                     Available Profit
+//                                   </span>
+
+//                                   <strong className="text-primary">
+//                                     KES{" "}
+//                                     {profitAvailable.toLocaleString(
+//                                       undefined,
+//                                       {
+//                                         minimumFractionDigits:
+//                                           2,
+//                                         maximumFractionDigits:
+//                                           2,
+//                                       }
+//                                     )}
+//                                   </strong>
+
+//                                 </div>
+
+//                               </div>
+
+
+//                               {/* WITHDRAWAL SCHEDULE */}
+
+//                               {withdrawalDays.length > 0 && (
+
+//                                 <div className="border rounded-3 p-3 mb-3">
+
+//                                   <div className="small fw-bold mb-2">
+//                                     📅 Profit Withdrawal Schedule
+//                                   </div>
+
+//                                   <div className="d-flex flex-wrap gap-2">
+
+//                                     {withdrawalDays.map(
+//                                       (day) => {
+
+//                                         const reached =
+//                                           daysCompleted >=
+//                                           day;
+
+//                                         const withdrawn =
+//                                           Number(
+//                                             inv.lastProfitWithdrawalDay ||
+//                                               0
+//                                           ) >= day;
+
+//                                         return (
+//                                           <span
+//                                             key={day}
+//                                             className={`badge rounded-pill ${
+//                                               withdrawn
+//                                                 ? "bg-success"
+//                                                 : reached
+//                                                 ? "bg-primary"
+//                                                 : "bg-light text-dark border"
+//                                             }`}
+//                                           >
+//                                             {withdrawn
+//                                               ? `✓ Day ${day}`
+//                                               : reached
+//                                               ? `Available Day ${day}`
+//                                               : `Day ${day}`}
+//                                           </span>
+//                                         );
+//                                       }
+//                                     )}
+
+//                                   </div>
+
+//                                 </div>
+
+//                               )}
+
+
+//                               {/* PRINCIPAL LOCK */}
+
+//                               <div className="alert alert-warning border-0 rounded-3 small mb-3">
+
+//                                 🔒{" "}
+//                                 <strong>
+//                                   Principal Locked
+//                                 </strong>
+
+//                                 <br />
+
+//                                 Your original investment
+//                                 remains locked and is not
+//                                 returned to your wallet
+//                                 through this investment.
+
+//                               </div>
+
+
+//                               {/* WITHDRAW PROFIT */}
+
+//                               {profitAvailable > 0 ? (
+
+//                                 <button
+//                                   type="button"
+//                                   className="btn btn-success w-100 rounded-3 fw-bold"
+//                                   disabled={
+//                                     isWithdrawing
+//                                   }
+//                                   onClick={() =>
+//                                     withdrawProfit(
+//                                       inv._id
+//                                     )
+//                                   }
+//                                 >
+
+//                                   {isWithdrawing
+//                                     ? "Processing..."
+//                                     : `💰 Withdraw KES ${profitAvailable.toLocaleString(
+//                                         undefined,
+//                                         {
+//                                           minimumFractionDigits:
+//                                             2,
+//                                           maximumFractionDigits:
+//                                             2,
+//                                         }
+//                                       )}`}
+
+//                                 </button>
+
+//                               ) : (
+
+//                                 <div className="alert alert-info border-0 rounded-3 small mb-0">
+
+//                                   {inv.status ===
+//                                   "completed" ? (
+
+//                                     <>
+//                                       ✅{" "}
+//                                       <strong>
+//                                         Investment completed.
+//                                       </strong>
+
+//                                       <br />
+
+//                                       Any remaining
+//                                       eligible profit can
+//                                       still be withdrawn.
+//                                     </>
+
+//                                   ) : Number(
+//                                       inv.nextProfitWithdrawalDay ||
+//                                         0
+//                                     ) > 0 ? (
+
+//                                     <>
+//                                       📅{" "}
+//                                       <strong>
+//                                         Next profit
+//                                         withdrawal:
+//                                       </strong>{" "}
+//                                       Day{" "}
+//                                       {
+//                                         inv.nextProfitWithdrawalDay
+//                                       }
+//                                     </>
+
+//                                   ) : (
+
+//                                     <>
+//                                       ℹ️ No further profit
+//                                       withdrawal is
+//                                       scheduled.
+//                                     </>
+
+//                                   )}
+
+//                                 </div>
+
+//                               )}
+
+//                             </>
+
+//                           )}
+
+//                         </div>
+
+//                       </div>
+
+//                     );
+//                   })}
+
+//                 </div>
+
+//               )}
+
+//             </div>
+
+//           </div>
+
+//         </div>
+
+//       </div>
+
+
+//       {/* =========================================
+//           FRAUD WARNING MODAL
+//       ========================================== */}
+
+//       {showFraudWarning && (
+
+//         <div
+//           className="modal fade show d-block"
+//           tabIndex="-1"
+//           role="dialog"
+//           aria-modal="true"
+//           style={{
+//             backgroundColor:
+//               "rgba(0, 0, 0, 0.7)",
+//             zIndex: 1055,
+//           }}
+//         >
+
+//           <div className="modal-dialog modal-dialog-centered px-3">
+
+//             <div className="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+
+//               {/* HEADER */}
+
+//               <div
+//                 className="text-white text-center p-4"
+//                 style={{
+//                   background:
+//                     "linear-gradient(135deg, #dc3545, #a71d2a)",
+//                 }}
+//               >
+
+//                 <div
+//                   className="mx-auto mb-3 rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center"
+//                   style={{
+//                     width: "70px",
+//                     height: "70px",
+//                     fontSize: "32px",
+//                   }}
+//                 >
+//                   ⚠️
+//                 </div>
+
+//                 <h4 className="fw-bold mb-1">
+//                   Important Investment Warning
+//                 </h4>
+
+//                 <p className="mb-0 opacity-75">
+//                   Please read carefully before
+//                   confirming your investment.
+//                 </p>
+
+//               </div>
+
+
+//               {/* BODY */}
+
+//               <div className="modal-body p-4">
+
+//                 <div className="alert alert-danger border-0 rounded-3">
+
+//                   <strong>
+//                     Fraud is strictly prohibited.
+//                   </strong>
+
+//                   <br />
+
+//                   Veran Enterprise does not tolerate
+//                   false information, impersonation,
+//                   fraudulent transactions, or attempts
+//                   to obtain money through deception.
+
+//                 </div>
+
+
+//                 <p className="text-muted">
+//                   You are responsible for ensuring that
+//                   the information you provide and the
+//                   transactions you make on the platform
+//                   are genuine and accurate.
+//                 </p>
+
+
+//                 <p className="text-muted">
+//                   Providing false information or
+//                   attempting to obtain money through
+//                   fraudulent means may result in the
+//                   suspension or closure of your account.
+//                   Transactions associated with suspected
+//                   fraudulent activity may be withheld
+//                   while they are reviewed, subject to
+//                   applicable law and our verification
+//                   procedures.
+//                 </p>
+
+
+//                 <div className="border rounded-3 p-3 mb-4 bg-light">
+
+//                   <div className="d-flex align-items-start">
+
+//                     <span className="me-2">
+//                       🔒
+//                     </span>
+
+//                     <div>
+
+//                       <strong>
+//                         Before you continue
+//                       </strong>
+
+//                       <div className="small text-muted mt-1">
+//                         Make sure the investment amount
+//                         and package selected are correct.
+//                         Only continue if you understand
+//                         the transaction you are making.
+//                       </div>
+
+//                     </div>
+
+//                   </div>
+
+//                 </div>
+
+
+//                 {/* ACKNOWLEDGEMENT */}
+
+//                 <div className="form-check border rounded-3 p-3 mb-4">
+
+//                   <input
+//                     className="form-check-input"
+//                     type="checkbox"
+//                     id="investmentFraudAcknowledgement"
+//                     checked={fraudAcknowledged}
+//                     onChange={(e) =>
+//                       setFraudAcknowledged(
+//                         e.target.checked
+//                       )
+//                     }
+//                   />
+
+//                   <label
+//                     className="form-check-label ms-2"
+//                     htmlFor="investmentFraudAcknowledgement"
+//                   >
+//                     I understand and confirm that
+//                     the information and transaction
+//                     I am submitting are genuine and
+//                     that I will not engage in fraudulent
+//                     activity.
+//                   </label>
+
+//                 </div>
+
+
+//                 {/* BUTTONS */}
+
+//                 <div className="d-grid gap-2">
+
+//                   <button
+//                     type="button"
+//                     className="btn btn-danger btn-lg rounded-3"
+//                     disabled={
+//                       !fraudAcknowledged ||
+//                       loading
+//                     }
+//                     onClick={confirmInvestment}
+//                   >
+//                     {loading
+//                       ? "Processing..."
+//                       : "I Understand — Continue Investment"}
+//                   </button>
+
+
+//                   <button
+//                     type="button"
+//                     className="btn btn-light border rounded-3"
+//                     disabled={loading}
+//                     onClick={() => {
+//                       setShowFraudWarning(false);
+//                       setFraudAcknowledged(false);
+//                     }}
+//                   >
+//                     Cancel
+//                   </button>
+
+//                 </div>
+
+
+//                 <p className="text-center text-muted small mt-3 mb-0">
+//                   Please review your investment details
+//                   carefully before confirming.
+//                 </p>
+
+//               </div>
+
+//             </div>
+
+//           </div>
+
+//         </div>
+
+//       )}
+
+//     </>
+//   );
+// }
+
+
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import api from "../services/api";
@@ -9,6 +1699,8 @@ export default function Dashboard() {
   const [amount, setAmount] = useState("");
   const [selectedPackage, setSelectedPackage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [withdrawingInvestmentId, setWithdrawingInvestmentId] =
+    useState(null);
 
   // Fraud warning
   const [showFraudWarning, setShowFraudWarning] = useState(false);
@@ -16,7 +1708,7 @@ export default function Dashboard() {
 
   /* ===========================
       LOAD DASHBOARD
-  ============================ */
+  =========================== */
 
   const loadDashboard = async () => {
     try {
@@ -55,7 +1747,7 @@ export default function Dashboard() {
 
   /* ===========================
       INVESTMENT BUTTON
-  ============================ */
+  =========================== */
 
   const invest = () => {
     if (!selectedPackage) {
@@ -100,14 +1792,13 @@ export default function Dashboard() {
       }
     }
 
-    // Show fraud warning before submitting investment
     setFraudAcknowledged(false);
     setShowFraudWarning(true);
   };
 
   /* ===========================
       CONFIRM INVESTMENT
-  ============================ */
+  =========================== */
 
   const confirmInvestment = async () => {
     if (!fraudAcknowledged) {
@@ -149,8 +1840,48 @@ export default function Dashboard() {
   };
 
   /* ===========================
+      WITHDRAW LOCKED PROFIT
+  =========================== */
+
+  const withdrawProfit = async (investmentId) => {
+    if (!investmentId) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Are you sure you want to withdraw your available investment profit?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setWithdrawingInvestmentId(investmentId);
+
+      const res = await api.post(
+        `/investments/${investmentId}/withdraw-profit`
+      );
+
+      alert(
+        res.data.message ||
+          "Profit withdrawn successfully."
+      );
+
+      await loadDashboard();
+    } catch (err) {
+      alert(
+        err.response?.data?.message ||
+          "Profit withdrawal failed."
+      );
+    } finally {
+      setWithdrawingInvestmentId(null);
+    }
+  };
+
+  /* ===========================
       PACKAGE COLORS
-  ============================ */
+  =========================== */
 
   const packageStyles = [
     {
@@ -208,7 +1939,7 @@ export default function Dashboard() {
 
   /* ===========================
       STATUS BADGE
-  ============================ */
+  =========================== */
 
   const getInvestmentStatus = (status) => {
     switch (status?.toLowerCase()) {
@@ -257,7 +1988,6 @@ export default function Dashboard() {
         ========================================== */}
 
         <div className="container-fluid mb-4">
-
           <div className="row align-items-center">
 
             <div className="col-md-8">
@@ -286,7 +2016,6 @@ export default function Dashboard() {
             </div>
 
           </div>
-
         </div>
 
 
@@ -399,7 +2128,8 @@ export default function Dashboard() {
               Choose Your Investment Package
             </h2>
 
-            <p className="text-muted mx-auto mb-0"
+            <p
+              className="text-muted mx-auto mb-0"
               style={{ maxWidth: "650px" }}
             >
               Select a package that matches your
@@ -409,10 +2139,12 @@ export default function Dashboard() {
           </div>
 
 
-          {/* INVESTMENT AMOUNT */}
+          {/* =========================================
+              INVESTMENT AMOUNT
+          ========================================== */}
 
           <div
-            className="card border-0 shadow-sm rounded-4 mb-5 mx-auto"
+            className="card border-0 shadow-sm rounded-4 mb-4 mx-auto"
             style={{ maxWidth: "850px" }}
           >
 
@@ -450,16 +2182,39 @@ export default function Dashboard() {
                 </small>
 
                 {selectedPackage && (
-
                   <small className="text-success fw-semibold">
                     Package selected ✓
                   </small>
-
                 )}
 
               </div>
 
             </div>
+
+          </div>
+
+
+          {/* =========================================
+              INVEST NOW BUTTON
+          ========================================== */}
+
+          <div className="text-center mb-5">
+
+            <button
+              type="button"
+              className="btn btn-success btn-lg px-5 py-3 rounded-pill fw-bold shadow"
+              onClick={invest}
+              disabled={loading}
+            >
+              {loading
+                ? "Processing..."
+                : "🚀 Invest Now"}
+            </button>
+
+            <p className="text-muted small mt-3 mb-0">
+              Select a package and enter an amount
+              within its investment range.
+            </p>
 
           </div>
 
@@ -495,6 +2250,10 @@ export default function Dashboard() {
                 const selected =
                   selectedPackage === pkg._id;
 
+                const isLockedProfit =
+                  pkg.investmentType ===
+                  "locked_profit";
+
                 return (
 
                   <div
@@ -513,10 +2272,7 @@ export default function Dashboard() {
                       }}
                     >
 
-                      {/* SELECTED BADGE */}
-
                       {selected && (
-
                         <div
                           className="position-absolute top-0 start-50 translate-middle badge rounded-pill px-3 py-2 text-white"
                           style={{
@@ -527,9 +2283,7 @@ export default function Dashboard() {
                         >
                           ✓ Selected
                         </div>
-
                       )}
-
 
                       <div
                         className="card h-100 border-0 overflow-hidden"
@@ -546,9 +2300,6 @@ export default function Dashboard() {
                           boxShadow: selected
                             ? `0 18px 45px ${style.shadow}`
                             : "0 8px 25px rgba(0,0,0,0.08)",
-                          border: selected
-                            ? `3px solid transparent`
-                            : "3px solid transparent",
                           transition:
                             "all 0.25s ease",
                         }}
@@ -608,12 +2359,21 @@ export default function Dashboard() {
                                 {style.icon}
                               </div>
 
-                              <span className="badge bg-white text-dark rounded-pill">
-                                {style.badge}
-                              </span>
+                              <div className="d-flex flex-column align-items-end gap-1">
+
+                                <span className="badge bg-white text-dark rounded-pill">
+                                  {style.badge}
+                                </span>
+
+                                {isLockedProfit && (
+                                  <span className="badge bg-warning text-dark rounded-pill">
+                                    🔒 Locked Profit
+                                  </span>
+                                )}
+
+                              </div>
 
                             </div>
-
 
                             <h4 className="fw-bold mt-3 mb-0">
                               {pkg.name}
@@ -627,8 +2387,6 @@ export default function Dashboard() {
                         {/* PACKAGE BODY */}
 
                         <div className="card-body p-4">
-
-                          {/* ROI */}
 
                           <div className="text-center mb-4">
 
@@ -654,8 +2412,6 @@ export default function Dashboard() {
                           </div>
 
 
-                          {/* PACKAGE DETAILS */}
-
                           <div className="mb-4">
 
                             <div className="d-flex justify-content-between align-items-center border-bottom py-2">
@@ -669,7 +2425,6 @@ export default function Dashboard() {
                               </strong>
 
                             </div>
-
 
                             <div className="d-flex justify-content-between align-items-center border-bottom py-2">
 
@@ -685,7 +2440,6 @@ export default function Dashboard() {
                               </strong>
 
                             </div>
-
 
                             <div className="d-flex justify-content-between align-items-center py-2">
 
@@ -705,7 +2459,42 @@ export default function Dashboard() {
                           </div>
 
 
-                          {/* SELECT BUTTON */}
+                          {/* LOCKED PROFIT DETAILS */}
+
+                          {isLockedProfit && (
+                            <div className="alert alert-warning border-0 rounded-3 small">
+
+                              <div className="fw-bold mb-1">
+                                🔒 Principal Locked
+                              </div>
+
+                              <div>
+                                Your invested principal
+                                remains locked. Profit is
+                                released according to the
+                                configured withdrawal
+                                schedule.
+                              </div>
+
+                              {Array.isArray(
+                                pkg.profitWithdrawalDays
+                              ) &&
+                                pkg.profitWithdrawalDays
+                                  .length > 0 && (
+                                  <div className="mt-2">
+                                    <strong>
+                                      Profit withdrawal:
+                                    </strong>{" "}
+                                    Day{" "}
+                                    {pkg.profitWithdrawalDays.join(
+                                      ", "
+                                    )}
+                                  </div>
+                                )}
+
+                            </div>
+                          )}
+
 
                           <button
                             type="button"
@@ -742,38 +2531,11 @@ export default function Dashboard() {
                     </div>
 
                   </div>
-
                 );
               })}
 
             </div>
-
           )}
-
-
-          {/* =========================================
-              INVEST BUTTON
-          ========================================== */}
-
-          <div className="text-center mt-5">
-
-            <button
-              type="button"
-              className="btn btn-success btn-lg px-5 py-3 rounded-pill fw-bold shadow"
-              onClick={invest}
-              disabled={loading}
-            >
-              {loading
-                ? "Processing..."
-                : "🚀 Invest Now"}
-            </button>
-
-            <p className="text-muted small mt-3 mb-0">
-              Select a package and enter an amount
-              within its investment range.
-            </p>
-
-          </div>
 
         </div>
 
@@ -806,7 +2568,6 @@ export default function Dashboard() {
                   </p>
 
                 </div>
-
 
                 <span className="badge bg-light text-dark border px-3 py-2">
                   {investments.length}{" "}
@@ -848,71 +2609,281 @@ export default function Dashboard() {
 
                 <div className="row g-4">
 
-                  {investments.map((inv) => (
+                  {investments.map((inv) => {
 
-                    <div
-                      className="col-md-6 col-xl-4"
-                      key={inv._id}
-                    >
+                    // =================================================
+                    // GENERIC LOCKED-PROFIT CHECK
+                    // =================================================
 
-                      <div className="border rounded-4 p-4 h-100">
+                    const isLockedProfit =
+                      inv.package?.investmentType ===
+                      "locked_profit";
 
-                        <div className="d-flex justify-content-between align-items-start mb-3">
+                    const daysCompleted =
+                      Number(
+                        inv.daysCompleted || 0
+                      );
 
-                          <div>
+                    const duration =
+                      Number(
+                        inv.duration || 30
+                      );
 
-                            <small className="text-muted">
-                              Package
+                    const progress =
+                      duration > 0
+                        ? Math.min(
+                            100,
+                            (daysCompleted /
+                              duration) *
+                              100
+                          )
+                        : 0;
+
+                    const profitAvailable =
+                      Number(
+                        inv.profitAvailable || 0
+                      );
+
+                    const profitEarned =
+                      Number(
+                        inv.profitEarned || 0
+                      );
+
+                    const profitWithdrawn =
+                      Number(
+                        inv.profitWithdrawn || 0
+                      );
+
+                    const dailyProfit =
+                      Number(
+                        inv.dailyProfit || 0
+                      );
+
+                    const totalProfit =
+                      Number(
+                        inv.profit || 0
+                      );
+
+                    const isWithdrawing =
+                      withdrawingInvestmentId ===
+                      inv._id;
+
+                    const withdrawalDays =
+                      Array.isArray(
+                        inv.package
+                          ?.profitWithdrawalDays
+                      )
+                        ? inv.package.profitWithdrawalDays
+                            .map(Number)
+                            .filter(
+                              (day) =>
+                                !isNaN(day) &&
+                                day > 0 &&
+                                day <= duration
+                            )
+                            .sort(
+                              (a, b) => a - b
+                            )
+                        : [];
+
+                    /*
+                    ==================================================
+                    LOCKED-PROFIT CHECKPOINT LOGIC
+
+                    Example:
+
+                    Day 20 reached, Day 10 not withdrawn:
+
+                    Day 10 -> Accumulated
+                    Day 20 -> Available
+                    Day 30 -> Upcoming
+
+                    If Day 10 was withdrawn:
+
+                    Day 10 -> Withdrawn
+                    Day 20 -> Available
+                    Day 30 -> Upcoming
+
+                    If Day 20 was withdrawn:
+
+                    Day 10 -> Included
+                    Day 20 -> Withdrawn
+                    Day 30 -> Available
+                    ==================================================
+                    */
+
+                    const lastWithdrawalDay =
+                      Number(
+                        inv.lastProfitWithdrawalDay ||
+                          0
+                      );
+
+                    const currentAvailableDay =
+                      [...withdrawalDays]
+                        .reverse()
+                        .find(
+                          (day) =>
+                            daysCompleted >= day &&
+                            day >
+                              lastWithdrawalDay
+                        ) || 0;
+
+                    return (
+
+                      <div
+                        className="col-md-6 col-xl-4"
+                        key={inv._id}
+                      >
+
+                        <div className="border rounded-4 p-4 h-100">
+
+                          {/* =================================
+                              INVESTMENT CARD HEADER
+                          ================================= */}
+
+                          <div className="d-flex justify-content-between align-items-start mb-3">
+
+                            <div>
+
+                              <small className="text-muted">
+                                Package
+                              </small>
+
+                              <h5 className="fw-bold mb-0">
+                                {inv.package?.name ||
+                                  "Package"}
+                              </h5>
+
+                              {isLockedProfit && (
+                                <span className="badge bg-warning text-dark rounded-pill mt-2">
+                                  🔒 Locked Profit
+                                </span>
+                              )}
+
+                            </div>
+
+                            <span
+                              className={`badge ${getInvestmentStatus(
+                                inv.status
+                              )} rounded-pill`}
+                            >
+                              {formatStatus(
+                                inv.status
+                              )}
+                            </span>
+
+                          </div>
+
+
+                          {/* =================================
+                              INVESTMENT AMOUNT
+                          ================================= */}
+
+                          <div className="mb-3">
+
+                            <small className="text-muted d-block">
+                              Investment Amount
                             </small>
 
-                            <h5 className="fw-bold mb-0">
-                              {inv.package?.name ||
-                                "Package"}
-                            </h5>
+                            <h4 className="fw-bold mb-0">
+                              KES{" "}
+                              {Number(
+                                inv.amount || 0
+                              ).toLocaleString()}
+                            </h4>
 
                           </div>
 
-                          <span
-                            className={`badge ${getInvestmentStatus(
-                              inv.status
-                            )} rounded-pill`}
-                          >
-                            {formatStatus(
-                              inv.status
-                            )}
-                          </span>
 
-                        </div>
+                          {/* =================================
+                              ROI + TOTAL PROFIT
+                          ================================= */}
 
+                          <div className="row g-2">
 
-                        <div className="mb-3">
+                            <div className="col-6">
 
-                          <small className="text-muted d-block">
-                            Investment Amount
-                          </small>
+                              <div className="bg-light rounded-3 p-3">
 
-                          <h4 className="fw-bold mb-0">
-                            KES{" "}
-                            {Number(
-                              inv.amount || 0
-                            ).toLocaleString()}
-                          </h4>
+                                <small className="text-muted d-block">
+                                  ROI
+                                </small>
 
-                        </div>
+                                <strong className="text-success">
+                                  {inv.roi}%
+                                </strong>
+
+                              </div>
+
+                            </div>
 
 
-                        <div className="row g-2">
+                            <div className="col-6">
 
-                          <div className="col-6">
+                              <div className="bg-light rounded-3 p-3">
 
-                            <div className="bg-light rounded-3 p-3">
+                                <small className="text-muted d-block">
+                                  Profit
+                                </small>
 
-                              <small className="text-muted d-block">
-                                ROI
-                              </small>
+                                <strong className="text-success">
+                                  KES{" "}
+                                  {totalProfit.toLocaleString(
+                                    undefined,
+                                    {
+                                      minimumFractionDigits:
+                                        2,
+                                      maximumFractionDigits:
+                                        2,
+                                    }
+                                  )}
+                                </strong>
 
-                              <strong className="text-success">
-                                {inv.roi}%
+                              </div>
+
+                            </div>
+
+                          </div>
+
+
+                          <hr />
+
+
+                          {/* =================================
+                              DATES
+                          ================================= */}
+
+                          <div className="small">
+
+                            <div className="d-flex justify-content-between mb-2">
+
+                              <span className="text-muted">
+                                Start
+                              </span>
+
+                              <strong>
+                                {inv.startDate
+                                  ? new Date(
+                                      inv.startDate
+                                    ).toLocaleDateString()
+                                  : "-"}
+                              </strong>
+
+                            </div>
+
+
+                            <div className="d-flex justify-content-between">
+
+                              <span className="text-muted">
+                                End
+                              </span>
+
+                              <strong>
+                                {inv.endDate
+                                  ? new Date(
+                                      inv.endDate
+                                    ).toLocaleDateString()
+                                  : "-"}
                               </strong>
 
                             </div>
@@ -920,73 +2891,440 @@ export default function Dashboard() {
                           </div>
 
 
-                          <div className="col-6">
+                          {/* =================================
+                              LOCKED-PROFIT INVESTMENT
+                          ================================= */}
 
-                            <div className="bg-light rounded-3 p-3">
+                          {isLockedProfit && (
 
-                              <small className="text-muted d-block">
-                                Profit
-                              </small>
+                            <>
 
-                              <strong className="text-success">
-                                KES{" "}
-                                {Number(
-                                  inv.profit || 0
-                                ).toLocaleString()}
-                              </strong>
+                              <hr />
 
-                            </div>
+                              {/* PROGRESS */}
 
-                          </div>
+                              <div className="mb-3">
 
-                        </div>
+                                <div className="d-flex justify-content-between align-items-center mb-2">
+
+                                  <span className="text-muted small">
+                                    Investment Progress
+                                  </span>
+
+                                  <strong className="small">
+                                    {daysCompleted} /{" "}
+                                    {duration} Days
+                                  </strong>
+
+                                </div>
+
+                                <div
+                                  className="progress"
+                                  style={{
+                                    height: "10px",
+                                    borderRadius:
+                                      "10px",
+                                  }}
+                                >
+
+                                  <div
+                                    className="progress-bar bg-success"
+                                    role="progressbar"
+                                    style={{
+                                      width: `${progress}%`,
+                                    }}
+                                  />
+
+                                </div>
+
+                              </div>
 
 
-                        <hr />
+                              {/* PROFIT INFORMATION */}
+
+                              <div className="bg-light rounded-3 p-3 mb-3">
+
+                                <div className="d-flex justify-content-between mb-2">
+
+                                  <span className="text-muted">
+                                    Daily Profit
+                                  </span>
+
+                                  <strong className="text-success">
+                                    KES{" "}
+                                    {dailyProfit.toLocaleString(
+                                      undefined,
+                                      {
+                                        minimumFractionDigits:
+                                          2,
+                                        maximumFractionDigits:
+                                          2,
+                                      }
+                                    )}
+                                  </strong>
+
+                                </div>
 
 
-                        <div className="small">
+                                <div className="d-flex justify-content-between mb-2">
 
-                          <div className="d-flex justify-content-between mb-2">
+                                  <span className="text-muted">
+                                    Profit Earned
+                                  </span>
 
-                            <span className="text-muted">
-                              Start
-                            </span>
+                                  <strong>
+                                    KES{" "}
+                                    {profitEarned.toLocaleString(
+                                      undefined,
+                                      {
+                                        minimumFractionDigits:
+                                          2,
+                                        maximumFractionDigits:
+                                          2,
+                                      }
+                                    )}
+                                  </strong>
 
-                            <strong>
-                              {inv.startDate
-                                ? new Date(
-                                    inv.startDate
-                                  ).toLocaleDateString()
-                                : "-"}
-                            </strong>
-
-                          </div>
+                                </div>
 
 
-                          <div className="d-flex justify-content-between">
+                                <div className="d-flex justify-content-between mb-2">
 
-                            <span className="text-muted">
-                              End
-                            </span>
+                                  <span className="text-muted">
+                                    Profit Withdrawn
+                                  </span>
 
-                            <strong>
-                              {inv.endDate
-                                ? new Date(
-                                    inv.endDate
-                                  ).toLocaleDateString()
-                                : "-"}
-                            </strong>
+                                  <strong>
+                                    KES{" "}
+                                    {profitWithdrawn.toLocaleString(
+                                      undefined,
+                                      {
+                                        minimumFractionDigits:
+                                          2,
+                                        maximumFractionDigits:
+                                          2,
+                                      }
+                                    )}
+                                  </strong>
 
-                          </div>
+                                </div>
+
+
+                                <div className="d-flex justify-content-between">
+
+                                  <span className="text-muted">
+                                    Available Profit
+                                  </span>
+
+                                  <strong className="text-primary">
+                                    KES{" "}
+                                    {profitAvailable.toLocaleString(
+                                      undefined,
+                                      {
+                                        minimumFractionDigits:
+                                          2,
+                                        maximumFractionDigits:
+                                          2,
+                                      }
+                                    )}
+                                  </strong>
+
+                                </div>
+
+                              </div>
+
+
+                              {/* =================================
+                                  WITHDRAWAL SCHEDULE
+                              ================================= */}
+
+                              {withdrawalDays.length > 0 && (
+
+                                <div className="border rounded-3 p-3 mb-3">
+
+                                  <div className="small fw-bold mb-3">
+                                    📅 Profit Withdrawal Schedule
+                                  </div>
+
+                                  <div className="d-flex flex-column gap-2">
+
+                                    {withdrawalDays.map(
+                                      (day) => {
+
+                                        const reached =
+                                          daysCompleted >=
+                                          day;
+
+                                        const withdrawn =
+                                          lastWithdrawalDay >=
+                                          day;
+
+                                        const isCurrentAvailable =
+                                          currentAvailableDay ===
+                                          day;
+
+                                        const isAccumulated =
+                                          reached &&
+                                          day <
+                                            currentAvailableDay &&
+                                          !withdrawn;
+
+                                        const isUpcoming =
+                                          !reached;
+
+                                        let badgeClass =
+                                          "bg-light text-dark border";
+
+                                        let label =
+                                          `Day ${day}`;
+
+                                        let statusText =
+                                          "Upcoming";
+
+                                        if (
+                                          withdrawn
+                                        ) {
+                                          badgeClass =
+                                            "bg-success text-white";
+
+                                          /*
+                                          If this checkpoint is
+                                          exactly the last one
+                                          withdrawn, show Withdrawn.
+                                          Earlier checkpoints were
+                                          part of accumulated profit.
+                                          */
+                                          if (
+                                            day ===
+                                            lastWithdrawalDay
+                                          ) {
+                                            label =
+                                              `✓ Day ${day}`;
+
+                                            statusText =
+                                              "Withdrawn";
+                                          } else {
+                                            label =
+                                              `✓ Day ${day}`;
+
+                                            statusText =
+                                              "Included";
+                                          }
+                                        } else if (
+                                          isCurrentAvailable
+                                        ) {
+                                          badgeClass =
+                                            "bg-primary text-white";
+
+                                          label =
+                                            `💰 Day ${day}`;
+
+                                          statusText =
+                                            "Available";
+                                        } else if (
+                                          isAccumulated
+                                        ) {
+                                          badgeClass =
+                                            "bg-warning text-dark";
+
+                                          label =
+                                            `↗ Day ${day}`;
+
+                                          statusText =
+                                            "Accumulated";
+                                        } else if (
+                                          isUpcoming
+                                        ) {
+                                          badgeClass =
+                                            "bg-light text-dark border";
+
+                                          label =
+                                            `🔒 Day ${day}`;
+
+                                          statusText =
+                                            "Upcoming";
+                                        }
+
+                                        return (
+                                          <div
+                                            key={day}
+                                            className="d-flex align-items-center justify-content-between"
+                                          >
+
+                                            <span
+                                              className={`badge rounded-pill ${badgeClass}`}
+                                            >
+                                              {label}
+                                            </span>
+
+                                            <small
+                                              className={
+                                                withdrawn
+                                                  ? "text-success fw-semibold"
+                                                  : isCurrentAvailable
+                                                  ? "text-primary fw-semibold"
+                                                  : isAccumulated
+                                                  ? "text-warning fw-semibold"
+                                                  : "text-muted"
+                                              }
+                                            >
+                                              {statusText}
+                                            </small>
+
+                                          </div>
+                                        );
+                                      }
+                                    )}
+
+                                  </div>
+
+                                  {/* ACCUMULATION EXPLANATION */}
+
+                                  {currentAvailableDay > 0 &&
+                                    currentAvailableDay >
+                                      withdrawalDays[0] &&
+                                    lastWithdrawalDay <
+                                      currentAvailableDay && (
+
+                                      <div className="alert alert-warning border-0 rounded-3 small mt-3 mb-0">
+
+                                        <strong>
+                                          💡 Accumulated Profit
+                                        </strong>
+
+                                        <br />
+
+                                        You did not withdraw at
+                                        an earlier checkpoint.
+                                        The eligible profit has
+                                        accumulated and is included
+                                        in your current available
+                                        profit.
+
+                                      </div>
+
+                                    )}
+
+                                </div>
+
+                              )}
+
+
+                              {/* =================================
+                                  PRINCIPAL LOCK
+                              ================================= */}
+
+                              <div className="alert alert-warning border-0 rounded-3 small mb-3">
+
+                                🔒{" "}
+                                <strong>
+                                  Principal Locked
+                                </strong>
+
+                                <br />
+
+                                Your original investment
+                                remains locked and is not
+                                returned to your wallet
+                                through this investment.
+
+                              </div>
+
+
+                              {/* =================================
+                                  WITHDRAW PROFIT
+                              ================================= */}
+
+                              {profitAvailable > 0 ? (
+
+                                <button
+                                  type="button"
+                                  className="btn btn-success w-100 rounded-3 fw-bold"
+                                  disabled={
+                                    isWithdrawing
+                                  }
+                                  onClick={() =>
+                                    withdrawProfit(
+                                      inv._id
+                                    )
+                                  }
+                                >
+
+                                  {isWithdrawing
+                                    ? "Processing..."
+                                    : `💰 Withdraw KES ${profitAvailable.toLocaleString(
+                                        undefined,
+                                        {
+                                          minimumFractionDigits:
+                                            2,
+                                          maximumFractionDigits:
+                                            2,
+                                        }
+                                      )}`}
+
+                                </button>
+
+                              ) : (
+
+                                <div className="alert alert-info border-0 rounded-3 small mb-0">
+
+                                  {inv.status ===
+                                  "completed" ? (
+
+                                    <>
+                                      ✅{" "}
+                                      <strong>
+                                        Investment completed.
+                                      </strong>
+
+                                      <br />
+
+                                      Any remaining
+                                      eligible profit can
+                                      still be withdrawn.
+                                    </>
+
+                                  ) : Number(
+                                      inv.nextProfitWithdrawalDay ||
+                                        0
+                                    ) > 0 ? (
+
+                                    <>
+                                      📅{" "}
+                                      <strong>
+                                        Next profit
+                                        withdrawal:
+                                      </strong>{" "}
+                                      Day{" "}
+                                      {
+                                        inv.nextProfitWithdrawalDay
+                                      }
+                                    </>
+
+                                  ) : (
+
+                                    <>
+                                      ℹ️ No further profit
+                                      withdrawal is
+                                      scheduled.
+                                    </>
+
+                                  )}
+
+                                </div>
+
+                              )}
+
+                            </>
+
+                          )}
 
                         </div>
 
                       </div>
 
-                    </div>
-
-                  ))}
+                    );
+                  })}
 
                 </div>
 

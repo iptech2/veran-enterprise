@@ -33,6 +33,31 @@ const PackageSchema = new mongoose.Schema(
       required: true,
     },
 
+    // =====================================
+    // INVESTMENT TYPE
+    // =====================================
+    // Existing packages remain "standard"
+    // New locked-profit packages use "locked_profit"
+    investmentType: {
+      type: String,
+      enum: ["standard", "locked_profit"],
+      default: "standard",
+    },
+
+    // =====================================
+    // PROFIT WITHDRAWAL CHECKPOINTS
+    // =====================================
+    // Used only by locked-profit packages.
+    //
+    // Example:
+    // [10, 20, 30]
+    //
+    // Existing standard packages ignore this.
+    profitWithdrawalDays: {
+      type: [Number],
+      default: [10, 20, 30],
+    },
+
     isActive: {
       type: Boolean,
       default: true,
