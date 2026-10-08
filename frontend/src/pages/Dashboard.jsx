@@ -374,21 +374,6 @@ export default function Dashboard() {
             .sort((a, b) => a - b)
         : [];
 
-    const exampleAmount = 1000;
-
-    const exampleProfit =
-      (exampleAmount * Number(pkg.roi || 0)) /
-      100;
-
-    const exampleFinalAmount =
-      exampleAmount + exampleProfit;
-
-    const exampleDailyProfit =
-      isLockedProfit &&
-      Number(pkg.duration) > 0
-        ? exampleProfit / Number(pkg.duration)
-        : 0;
-
     return (
       <div
         className="col-sm-6 col-lg-4 col-xl-3"
@@ -535,29 +520,6 @@ export default function Dashboard() {
 
             <div className="card-body p-4">
 
-              {isLockedProfit && (
-                <div className="alert alert-warning border-0 rounded-3 small mb-3">
-                  <strong>
-                    🔒 GROWTH PLUS / LOCKED PROFIT
-                  </strong>
-
-                  <br />
-
-                  Your principal is locked during the
-                  investment period. Profit accumulates
-                  according to the package terms and
-                  becomes available at configured
-                  withdrawal checkpoints.
-
-                  <br />
-
-                  <strong>
-                    At maturity, your principal is
-                    automatically returned to your wallet.
-                  </strong>
-                </div>
-              )}
-
               <div className="text-center mb-4">
 
                 <small className="text-muted d-block mb-1">
@@ -623,251 +585,6 @@ export default function Dashboard() {
                 </div>
 
               </div>
-
-              {/* STANDARD PACKAGE INFORMATION */}
-
-              {!isLockedProfit && (
-                <div className="border rounded-3 p-3 mb-3 bg-white">
-
-                  <div className="fw-bold mb-2">
-                    🟢 How Standard Investment Works
-                  </div>
-
-                  <div className="small text-muted">
-
-                    <div className="mb-2">
-                      <strong>1. Choose:</strong>{" "}
-                      Select this package and enter an
-                      amount within the allowed range.
-                    </div>
-
-                    <div className="mb-2">
-                      <strong>2. Invest:</strong>{" "}
-                      Your selected amount is deducted
-                      from your available wallet balance.
-                    </div>
-
-                    <div className="mb-2">
-                      <strong>3. Earn:</strong>{" "}
-                      Your investment earns profit
-                      according to this package's{" "}
-                      <strong>{pkg.roi}% ROI</strong>.
-                    </div>
-
-                    <div className="mb-2">
-                      <strong>4. Wait:</strong>{" "}
-                      Keep the investment until the{" "}
-                      <strong>
-                        {pkg.duration}-day
-                      </strong>{" "}
-                      investment period reaches
-                      maturity.
-                    </div>
-
-                    <div>
-                      <strong>5. Maturity:</strong>{" "}
-                      At maturity, your principal and
-                      earned profit are returned to
-                      your wallet.
-                    </div>
-
-                  </div>
-
-                  <hr />
-
-                  <div className="small">
-
-                    <strong>
-                      Example: Investing KES 1,000
-                    </strong>
-
-                    <div className="d-flex justify-content-between mt-2">
-                      <span>Investment</span>
-
-                      <strong>
-                        KES 1,000
-                      </strong>
-                    </div>
-
-                    <div className="d-flex justify-content-between">
-                      <span>Estimated profit</span>
-
-                      <strong className="text-success">
-                        KES{" "}
-                        {exampleProfit.toLocaleString(
-                          undefined,
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }
-                        )}
-                      </strong>
-                    </div>
-
-                    <div className="d-flex justify-content-between">
-                      <span>At maturity</span>
-
-                      <strong>
-                        KES{" "}
-                        {exampleFinalAmount.toLocaleString(
-                          undefined,
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }
-                        )}
-                      </strong>
-                    </div>
-
-                  </div>
-
-                </div>
-              )}
-
-              {/* LOCKED PACKAGE INFORMATION */}
-
-              {isLockedProfit && (
-                <div className="border border-warning rounded-3 p-3 mb-3 bg-white">
-
-                  <div className="fw-bold mb-2 text-warning-emphasis">
-                    🔒 How Growth Plus / Locked Profit
-                    Works
-                  </div>
-
-                  <div className="small text-muted">
-
-                    <div className="mb-2">
-                      <strong>1. Choose:</strong>{" "}
-                      Select the Growth Plus package
-                      and enter an amount within its
-                      allowed range.
-                    </div>
-
-                    <div className="mb-2">
-                      <strong>2. Invest:</strong>{" "}
-                      The investment amount is deducted
-                      from your wallet.
-                    </div>
-
-                    <div className="mb-2">
-                      <strong>3. Principal is locked:</strong>{" "}
-                      Your original investment cannot
-                      be withdrawn during the investment
-                      period.
-                    </div>
-
-                    <div className="mb-2">
-                      <strong>4. Daily profit:</strong>{" "}
-                      Profit accumulates as the
-                      investment progresses according
-                      to the package terms.
-                    </div>
-
-                    <div className="mb-2">
-                      <strong>5. Profit checkpoints:</strong>{" "}
-                      Eligible profit becomes available
-                      on the configured withdrawal days.
-                    </div>
-
-                    <div className="mb-2">
-                      <strong>6. Missed checkpoint:</strong>{" "}
-                      If you do not withdraw at an earlier
-                      checkpoint, eligible profit can
-                      accumulate for a later checkpoint.
-                    </div>
-
-                    <div>
-                      <strong>7. Maturity:</strong>{" "}
-                      When the investment reaches maturity,
-                      your original principal is automatically
-                      returned to your wallet.
-                    </div>
-
-                  </div>
-
-                  <hr />
-
-                  <div className="small">
-
-                    <strong>
-                      Example: Investing KES 1,000
-                    </strong>
-
-                    <div className="d-flex justify-content-between mt-2">
-                      <span>Starting principal</span>
-
-                      <strong>
-                        KES 1,000
-                      </strong>
-                    </div>
-
-                    <div className="d-flex justify-content-between">
-                      <span>Duration</span>
-
-                      <strong>
-                        {pkg.duration} Days
-                      </strong>
-                    </div>
-
-                    <div className="d-flex justify-content-between">
-                      <span>Estimated total profit</span>
-
-                      <strong className="text-success">
-                        KES{" "}
-                        {exampleProfit.toLocaleString(
-                          undefined,
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }
-                        )}
-                      </strong>
-                    </div>
-
-                    <div className="d-flex justify-content-between">
-                      <span>Illustrative daily profit</span>
-
-                      <strong className="text-success">
-                        KES{" "}
-                        {exampleDailyProfit.toLocaleString(
-                          undefined,
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }
-                        )}
-                      </strong>
-                    </div>
-
-                    <div className="d-flex justify-content-between">
-                      <span>Principal during investment</span>
-
-                      <strong className="text-warning">
-                        🔒 Locked
-                      </strong>
-                    </div>
-
-                    <div className="d-flex justify-content-between">
-                      <span>At maturity</span>
-
-                      <strong className="text-success">
-                        Principal returned
-                      </strong>
-                    </div>
-
-                  </div>
-
-                  <div className="alert alert-light border small mt-3 mb-0">
-                    <strong>Important:</strong>{" "}
-                    The daily profit shown above is an
-                    illustration based on the package
-                    ROI and duration. Your actual investment
-                    record will show the exact daily profit
-                    calculated by Veran.
-                  </div>
-
-                </div>
-              )}
 
               {/* WITHDRAWAL DAYS */}
 
@@ -1129,142 +846,6 @@ export default function Dashboard() {
               and release eligible profit according to
               scheduled checkpoints.
             </p>
-
-          </div>
-
-          {/* =========================================
-              HOW THE TWO INVESTMENT TYPES WORK
-          ========================================== */}
-
-          <div className="row g-4 mb-5">
-
-            {/* STANDARD */}
-
-            <div className="col-lg-6">
-
-              <div className="card border-0 shadow-sm rounded-4 h-100">
-
-                <div className="card-body p-4">
-
-                  <span className="badge bg-primary rounded-pill mb-3">
-                    🟢 STANDARD
-                  </span>
-
-                  <h4 className="fw-bold">
-                    Standard Investment Flow
-                  </h4>
-
-                  <p className="text-muted small">
-                    Your principal remains invested
-                    until maturity. At maturity,
-                    your principal and earned profit
-                    are returned to your wallet.
-                  </p>
-
-                  <div className="d-flex flex-wrap align-items-center gap-2 small">
-
-                    <span className="badge bg-light text-dark border p-2">
-                      💰 Wallet
-                    </span>
-
-                    <span>→</span>
-
-                    <span className="badge bg-light text-dark border p-2">
-                      📈 Invest
-                    </span>
-
-                    <span>→</span>
-
-                    <span className="badge bg-light text-dark border p-2">
-                      💵 Earn Profit
-                    </span>
-
-                    <span>→</span>
-
-                    <span className="badge bg-light text-dark border p-2">
-                      ⏳ Maturity
-                    </span>
-
-                    <span>→</span>
-
-                    <span className="badge bg-success p-2">
-                      💰 Principal + Profit
-                    </span>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* LOCKED */}
-
-            <div className="col-lg-6">
-
-              <div
-                className="card border-warning shadow-sm rounded-4 h-100"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #fffdf5, #fff8df)",
-                }}
-              >
-
-                <div className="card-body p-4">
-
-                  <span className="badge bg-warning text-dark rounded-pill mb-3">
-                    🔒 GROWTH PLUS / LOCKED
-                  </span>
-
-                  <h4 className="fw-bold">
-                    Locked Profit Flow
-                  </h4>
-
-                  <p className="text-muted small">
-                    Your principal is locked while
-                    profit accumulates according to
-                    the package terms and becomes
-                    available at configured checkpoints.
-                  </p>
-
-                  <div className="d-flex flex-wrap align-items-center gap-2 small">
-
-                    <span className="badge bg-light text-dark border p-2">
-                      💰 Wallet
-                    </span>
-
-                    <span>→</span>
-
-                    <span className="badge bg-light text-dark border p-2">
-                      🔒 Principal Locked
-                    </span>
-
-                    <span>→</span>
-
-                    <span className="badge bg-light text-dark border p-2">
-                      📈 Daily Profit
-                    </span>
-
-                    <span>→</span>
-
-                    <span className="badge bg-warning text-dark p-2">
-                      📅 Checkpoints
-                    </span>
-
-                    <span>→</span>
-
-                    <span className="badge bg-success p-2">
-                      💰 Principal Returned
-                    </span>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
 
           </div>
 
@@ -1552,6 +1133,23 @@ export default function Dashboard() {
 
           </div>
 
+          <div className="text-center mx-auto mb-5" style={{ maxWidth: "850px", marginTop: "-1.5rem" }}>
+            <button
+              type="button"
+              className={`btn ${
+                selectedIsLocked ? "btn-warning" : "btn-success"
+              } btn-lg w-100 rounded-3 fw-bold shadow-sm`}
+              onClick={invest}
+              disabled={loading}
+            >
+              {loading
+                ? "Processing..."
+                : selectedIsLocked
+                ? "🔒 Invest in Growth Plus"
+                : "🚀 Invest Now"}
+            </button>
+          </div>
+
           {/* =========================================
               STANDARD PACKAGES
           ========================================== */}
@@ -1591,25 +1189,27 @@ export default function Dashboard() {
             </div>
 
             <div
-              className="alert alert-primary border-0 rounded-4 mb-4"
+              className="alert alert-primary border-0 rounded-4 mb-4 p-4"
               style={{
                 background:
                   "linear-gradient(135deg, #e7f1ff, #f5f9ff)",
               }}
             >
-
-              <div className="fw-bold mb-1">
-                🟢 How Standard Packages Work
+              <h5 className="fw-bold mb-3">🟢 How Standard Investment Works</h5>
+              <ol className="mb-3 ps-3">
+                <li className="mb-2"><strong>Choose:</strong> Select this package and enter an amount within the allowed range.</li>
+                <li className="mb-2"><strong>Invest:</strong> Your selected amount is deducted from your available wallet balance.</li>
+                <li className="mb-2"><strong>Earn:</strong> Your investment earns profit according to this package's <strong>30% ROI</strong>.</li>
+                <li className="mb-2"><strong>Wait:</strong> Keep the investment until the <strong>15-day</strong> investment period reaches maturity.</li>
+                <li><strong>Maturity:</strong> At maturity, your principal and earned profit are returned to your wallet.</li>
+              </ol>
+              <div className="bg-white border rounded-3 p-3">
+                <div className="fw-bold mb-2">Example: Investing KES 1,000</div>
+                <div className="d-flex justify-content-between border-bottom py-2"><span>Investment</span><strong>KES 1,000</strong></div>
+                <div className="d-flex justify-content-between border-bottom py-2"><span>Estimated profit</span><strong>KES 300.00</strong></div>
+                <div className="d-flex justify-content-between pt-2"><span>At maturity</span><strong className="text-success">KES 1,300.00</strong></div>
               </div>
-
-              <small>
-                Choose a package → Invest from your
-                wallet → Earn according to the package
-                ROI → Wait until maturity → Your
-                principal and earned profit are
-                returned to your wallet.
-              </small>
-
+              <small className="text-muted d-block mt-2">Illustrative example based on the stated 30% ROI and 15-day duration. Actual returns depend on the package terms.</small>
             </div>
 
             {standardPackages.length === 0 ? (
@@ -1676,45 +1276,32 @@ export default function Dashboard() {
             </div>
 
             <div
-              className="alert alert-warning border-0 rounded-4 mb-4"
+              className="alert alert-warning border-0 rounded-4 mb-4 p-4"
               style={{
                 background:
                   "linear-gradient(135deg, #fff3cd, #fffaf0)",
               }}
             >
-
-              <div className="fw-bold mb-2">
-                🔒 Understand Growth Plus Before
-                Investing
+              <h5 className="fw-bold mb-3">🔒 How Growth Plus / Locked Profit Works</h5>
+              <ol className="mb-3 ps-3">
+                <li className="mb-2"><strong>Choose:</strong> Select the Growth Plus package and enter an amount within its allowed range.</li>
+                <li className="mb-2"><strong>Invest:</strong> The investment amount is deducted from your wallet.</li>
+                <li className="mb-2"><strong>Principal is locked:</strong> Your original investment cannot be withdrawn during the investment period.</li>
+                <li className="mb-2"><strong>Daily profit:</strong> Profit accumulates as the investment progresses according to the package terms.</li>
+                <li className="mb-2"><strong>Profit checkpoints:</strong> Eligible profit becomes available on the configured withdrawal days.</li>
+                <li className="mb-2"><strong>Missed checkpoint:</strong> If you do not withdraw at an earlier checkpoint, eligible profit can accumulate for a later checkpoint.</li>
+                <li><strong>Maturity:</strong> When the investment reaches maturity, your original principal is automatically returned to your wallet.</li>
+              </ol>
+              <div className="bg-white border rounded-3 p-3">
+                <div className="fw-bold mb-2">Example: Investing KES 1,000</div>
+                <div className="d-flex justify-content-between border-bottom py-2"><span>Starting principal</span><strong>KES 1,000</strong></div>
+                <div className="d-flex justify-content-between border-bottom py-2"><span>Duration</span><strong>30 Days</strong></div>
+                <div className="d-flex justify-content-between border-bottom py-2"><span>Estimated total profit</span><strong>KES 600.00</strong></div>
+                <div className="d-flex justify-content-between border-bottom py-2"><span>Illustrative daily profit</span><strong>KES 20.00</strong></div>
+                <div className="d-flex justify-content-between border-bottom py-2"><span>Principal during investment</span><strong className="text-warning">🔒 Locked</strong></div>
+                <div className="d-flex justify-content-between pt-2"><span>At maturity</span><strong className="text-success">Principal returned</strong></div>
               </div>
-
-              <small>
-
-                Your original investment principal is
-                locked during the investment period.
-
-                <br />
-
-                Profit accumulates according to the
-                selected package terms and becomes
-                eligible for withdrawal at the
-                configured checkpoints.
-
-                <br />
-
-                If you skip an earlier checkpoint,
-                eligible profit can accumulate for a
-                later checkpoint.
-
-                <br />
-
-                <strong>
-                  At maturity, your original principal
-                  is automatically returned to your wallet.
-                </strong>
-
-              </small>
-
+              <small className="text-muted d-block mt-2"><strong>Important:</strong> The daily profit shown above is an illustration based on the package ROI and duration. Your actual investment record will show the exact daily profit calculated by Veran.</small>
             </div>
 
             {lockedPackages.length === 0 ? (
