@@ -4,6 +4,11 @@ import api from "../services/api";
 
 export default function Wallet() {
   // ==========================================
+  // CONSTANTS
+  // ==========================================
+  const TILL_NUMBER = "9207399";
+
+  // ==========================================
   // WALLET
   // ==========================================
   const [balance, setBalance] = useState(0);
@@ -27,6 +32,9 @@ export default function Wallet() {
   const [manualLoading, setManualLoading] = useState(false);
   const [manualDeposits, setManualDeposits] = useState([]);
 
+  // Copy Till
+  const [copiedTill, setCopiedTill] = useState(false);
+
   // ==========================================
   // WITHDRAWAL
   // ==========================================
@@ -40,12 +48,9 @@ export default function Wallet() {
   const loadWallet = async () => {
     try {
       const res = await api.get("/wallet/balance");
-
       setBalance(res.data.balance || 0);
     } catch (err) {
-      console.log(
-        err.response?.data || err.message
-      );
+      console.log(err.response?.data || err.message);
     }
   };
 
@@ -54,15 +59,10 @@ export default function Wallet() {
   // ==========================================
   const loadManualDeposits = async () => {
     try {
-      const res = await api.get(
-        "/manual-deposits/my"
-      );
-
+      const res = await api.get("/manual-deposits/my");
       setManualDeposits(res.data || []);
     } catch (err) {
-      console.log(
-        err.response?.data || err.message
-      );
+      console.log(err.response?.data || err.message);
     }
   };
 
@@ -75,31 +75,45 @@ export default function Wallet() {
   }, []);
 
   // ==========================================
+  // COPY TILL NUMBER
+  // ==========================================
+  const copyTillNumber = async () => {
+    try {
+      await navigator.clipboard.writeText(TILL_NUMBER);
+
+      setCopiedTill(true);
+
+      setTimeout(() => {
+        setCopiedTill(false);
+      }, 2000);
+    } catch (err) {
+      alert(`Till Number: ${TILL_NUMBER}`);
+    }
+  };
+
+  // ==========================================
   // STK DEPOSIT
   // ==========================================
   const deposit = async () => {
     if (!amount || Number(amount) <= 0) {
-      return alert("Enter a valid deposit amount.");
+      return alert("Please enter a valid deposit amount.");
     }
 
-    if (!phone) {
-      return alert("Enter your M-Pesa phone number.");
+    if (!phone.trim()) {
+      return alert("Please enter your M-Pesa phone number.");
     }
 
     try {
       setLoading(true);
 
-      const res = await api.post(
-        "/wallet/deposit",
-        {
-          amount: Number(amount),
-          phone: phone.trim(),
-        }
-      );
+      const res = await api.post("/wallet/deposit", {
+        amount: Number(amount),
+        phone: phone.trim(),
+      });
 
       alert(
         res.data.message ||
-          "Payment request sent."
+          "Payment request sent successfully."
       );
 
       setCheckingPayment(true);
@@ -114,7 +128,7 @@ export default function Wallet() {
     } catch (err) {
       alert(
         err.response?.data?.message ||
-          "Deposit failed."
+          "Deposit failed. Please try again."
       );
     } finally {
       setLoading(false);
@@ -153,26 +167,23 @@ export default function Wallet() {
       Number(manualAmount) <= 0
     ) {
       return alert(
-        "Enter a valid deposit amount."
+        "Please enter a valid deposit amount."
       );
     }
 
-    if (!manualPhone) {
+    if (!manualPhone.trim()) {
       return alert(
-        "Enter the M-Pesa phone number used for payment."
+        "Please enter the M-Pesa phone number used for payment."
       );
     }
 
     try {
       setManualLoading(true);
 
-      const res = await api.post(
-        "/manual-deposits",
-        {
-          amount: Number(manualAmount),
-          phone: manualPhone.trim(),
-        }
-      );
+      const res = await api.post("/manual-deposits", {
+        amount: Number(manualAmount),
+        phone: manualPhone.trim(),
+      });
 
       alert(
         res.data.message ||
@@ -202,13 +213,13 @@ export default function Wallet() {
       Number(withdrawAmount) <= 0
     ) {
       return alert(
-        "Enter a valid withdrawal amount."
+        "Please enter a valid withdrawal amount."
       );
     }
 
-    if (!withdrawPhone) {
+    if (!withdrawPhone.trim()) {
       return alert(
-        "Enter your M-Pesa phone number."
+        "Please enter your M-Pesa phone number."
       );
     }
 
@@ -223,13 +234,10 @@ export default function Wallet() {
     try {
       setWithdrawLoading(true);
 
-      const res = await api.post(
-        "/withdrawals",
-        {
-          amount: Number(withdrawAmount),
-          phone: withdrawPhone.trim(),
-        }
-      );
+      const res = await api.post("/withdrawals", {
+        amount: Number(withdrawAmount),
+        phone: withdrawPhone.trim(),
+      });
 
       alert(
         res.data.message ||
@@ -243,493 +251,199 @@ export default function Wallet() {
     } catch (err) {
       alert(
         err.response?.data?.message ||
-          "Withdrawal failed."
+          "Withdrawal failed. Please try again."
       );
     } finally {
       setWithdrawLoading(false);
     }
   };
 
+  // ==========================================
+  // STATUS HELPERS
+  // ==========================================
+  const getStatusBadge = (status) => {
+    if (status === "approved") {
+      return "bg-success";
+    }
+
+    if (status === "rejected") {
+      return "bg-danger";
+    }
+
+    return "bg-warning text-dark";
+  };
+
+  const getStatusText = (status) => {
+    if (!status) return "Pending";
+
+    return (
+      status.charAt(0).toUpperCase() +
+      status.slice(1)
+    );
+  };
+
   return (
     <>
       <Navbar />
 
-      <div className="container py-5">
+      {/* ==========================================
+          PAGE
+      ========================================== */}
 
-        {/* ==========================================
-            WALLET BALANCE
-        ========================================== */}
+      <div
+        style={{
+          backgroundColor: "#f6f9f7",
+          minHeight: "100vh",
+        }}
+      >
+        <div className="container py-4 py-md-5">
 
-        <div className="card border-0 shadow-sm rounded-4 mb-5">
-          <div className="card-body p-4">
+          {/* ==========================================
+              PAGE HEADER
+          ========================================== */}
 
-            <p className="text-muted mb-1">
-              Available Wallet Balance
+          <div className="mb-4">
+            <h2
+              className="fw-bold mb-1"
+              style={{ color: "#0f5132" }}
+            >
+              My Wallet
+            </h2>
+
+            <p className="text-muted mb-0">
+              Manage your balance, deposits and withdrawals.
             </p>
-
-            <h1 className="fw-bold text-success mb-0">
-              KES {Number(balance).toLocaleString()}
-            </h1>
-
           </div>
-        </div>
 
+          {/* ==========================================
+              WALLET BALANCE
+          ========================================== */}
 
-        {/* ==========================================
-            STK DEPOSIT
-        ========================================== */}
+          <div
+            className="card border-0 shadow rounded-4 mb-5 overflow-hidden"
+            style={{
+              background:
+                "linear-gradient(135deg, #0f5132 0%, #198754 65%, #20c997 100%)",
+              color: "white",
+            }}
+          >
+            <div className="card-body p-4 p-md-5">
 
-        <div className="card border-0 shadow-sm rounded-4 mb-5">
+              <div className="d-flex justify-content-between align-items-start">
 
-          <div className="card-body p-4">
+                <div>
 
-            <div className="d-flex justify-content-between align-items-center mb-2">
+                  <p className="mb-2 opacity-75">
+                    Available Wallet Balance
+                  </p>
 
-              <div>
-                <h4 className="fw-bold mb-1">
-                  Deposit Money
-                </h4>
+                  <h1 className="fw-bold mb-2">
+                    KES{" "}
+                    {Number(balance).toLocaleString()}
+                  </h1>
 
-                <p className="text-muted mb-0">
-                  Deposit money directly into your
-                  Veran Enterprise wallet.
-                </p>
-              </div>
-
-              <span className="badge bg-warning text-dark">
-                Temporarily Unavailable
-              </span>
-
-            </div>
-
-
-            <div className="row mt-4">
-
-              <div className="col-md-6 mb-3">
-
-                <label className="form-label fw-semibold">
-                  Deposit Amount
-                </label>
-
-                <div className="input-group input-group-lg">
-
-                  <span className="input-group-text">
-                    KES
-                  </span>
-
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="Enter amount"
-                    value={amount}
-                    onChange={(e) =>
-                      setAmount(e.target.value)
-                    }
-                  />
+                  <small className="opacity-75">
+                    Available funds in your Veran wallet
+                  </small>
 
                 </div>
-
-              </div>
-
-
-              <div className="col-md-6 mb-3">
-
-                <label className="form-label fw-semibold">
-                  M-Pesa Phone Number
-                </label>
-
-                <input
-                  type="text"
-                  className="form-control form-control-lg"
-                  placeholder="2547XXXXXXXX"
-                  value={phone}
-                  onChange={(e) =>
-                    setPhone(e.target.value)
-                  }
-                />
-
-              </div>
-
-            </div>
-
-
-            <div className="d-grid">
-
-              <button
-                type="button"
-                className="btn btn-success btn-lg rounded-3"
-                onClick={handleStkDeposit}
-                disabled={
-                  loading || checkingPayment
-                }
-              >
-                {checkingPayment
-                  ? "Checking Payment..."
-                  : "Deposit via M-Pesa STK"}
-              </button>
-
-            </div>
-
-
-            <div className="alert alert-warning border-0 rounded-3 mt-4 mb-0">
-
-              <strong>
-                STK Push Temporarily Unavailable
-              </strong>
-
-              <p className="mb-0 mt-1 small">
-                We're making a few improvements to
-                our M-Pesa payment service. You can
-                use the manual deposit option below
-                instead.
-              </p>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        {/* ==========================================
-            MANUAL DEPOSIT
-        ========================================== */}
-
-        <div
-          id="manual-deposit"
-          className="card border-0 shadow-sm rounded-4 mb-5"
-        >
-
-          <div className="card-body p-4">
-
-            <h4 className="fw-bold mb-1">
-              Manual M-Pesa Deposit
-            </h4>
-
-            <p className="text-muted mb-4">
-              Pay using M-Pesa Buy Goods and Services,
-              then submit your payment details below.
-            </p>
-
-
-            <div className="alert alert-info border-0 rounded-3">
-
-              <h6 className="fw-bold">
-                M-Pesa Payment Instructions
-              </h6>
-
-              <p className="mb-1">
-                <strong>Buy Goods and Services Till:</strong>
-              </p>
-
-              <h4 className="fw-bold mb-3">
-                9207399
-              </h4>
-
-              <ol className="mb-0">
-
-                <li>
-                  Open M-Pesa on your phone.
-                </li>
-
-                <li>
-                  Select <strong>Lipa na M-Pesa</strong>.
-                </li>
-
-                <li>
-                  Select <strong>Buy Goods and Services</strong>.
-                </li>
-
-                <li>
-                  Enter Till Number{" "}
-                  <strong>9207399</strong>.
-                </li>
-
-                <li>
-                  Enter the amount you want to deposit.
-                </li>
-
-                <li>
-                  Complete the M-Pesa payment.
-                </li>
-
-                <li>
-                  Submit the amount and phone number
-                  used for the payment below.
-                </li>
-
-              </ol>
-
-            </div>
-
-
-            <div className="row">
-
-              <div className="col-md-6 mb-3">
-
-                <label className="form-label fw-semibold">
-                  Deposit Amount
-                </label>
-
-                <div className="input-group input-group-lg">
-
-                  <span className="input-group-text">
-                    KES
-                  </span>
-
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="Enter amount paid"
-                    value={manualAmount}
-                    onChange={(e) =>
-                      setManualAmount(
-                        e.target.value
-                      )
-                    }
-                  />
-
-                </div>
-
-              </div>
-
-
-              <div className="col-md-6 mb-3">
-
-                <label className="form-label fw-semibold">
-                  M-Pesa Phone Used
-                </label>
-
-                <input
-                  type="text"
-                  className="form-control form-control-lg"
-                  placeholder="2547XXXXXXXX"
-                  value={manualPhone}
-                  onChange={(e) =>
-                    setManualPhone(
-                      e.target.value
-                    )
-                  }
-                />
-
-                <small className="text-muted">
-                  Enter the phone number that made
-                  the M-Pesa payment.
-                </small>
-
-              </div>
-
-            </div>
-
-
-            <div className="d-grid">
-
-              <button
-                type="button"
-                className="btn btn-primary btn-lg rounded-3"
-                onClick={submitManualDeposit}
-                disabled={manualLoading}
-              >
-                {manualLoading
-                  ? "Submitting Deposit..."
-                  : "Submit Manual Deposit"}
-              </button>
-
-            </div>
-
-
-            <div className="alert alert-warning border-0 rounded-3 mt-4 mb-0">
-
-              <strong>
-                Important:
-              </strong>
-
-              <p className="mb-0 mt-1 small">
-                Your wallet will only be credited after
-                an administrator verifies and approves
-                your payment. Do not submit false payment
-                information.
-              </p>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        {/* ==========================================
-            MANUAL DEPOSIT HISTORY
-        ========================================== */}
-
-        <div className="card border-0 shadow-sm rounded-4 mb-5">
-
-          <div className="card-body p-4">
-
-            <h4 className="fw-bold mb-3">
-              Manual Deposit History
-            </h4>
-
-
-            {manualDeposits.length === 0 ? (
-
-              <div className="alert alert-info mb-0">
-                No manual deposit requests yet.
-              </div>
-
-            ) : (
-
-              manualDeposits.map((item) => (
 
                 <div
-                  key={item._id}
-                  className="border rounded-3 p-3 mb-3"
+                  className="rounded-circle d-flex align-items-center justify-content-center"
+                  style={{
+                    width: "60px",
+                    height: "60px",
+                    backgroundColor:
+                      "rgba(255,255,255,0.15)",
+                    fontSize: "28px",
+                  }}
                 >
+                  💰
+                </div>
 
-                  <div className="row">
+              </div>
 
-                    <div className="col-md-4">
+            </div>
+          </div>
 
-                      <p className="mb-1">
-                        <strong>Amount:</strong>
-                      </p>
+          {/* ==========================================
+              DEPOSIT
+          ========================================== */}
 
-                      <p className="text-success fw-bold">
-                        KES{" "}
-                        {Number(
-                          item.amount
-                        ).toLocaleString()}
-                      </p>
+          <div
+            className="card border-0 shadow-sm rounded-4 mb-5 overflow-hidden"
+            style={{
+              borderTop: "4px solid #198754",
+            }}
+          >
 
-                    </div>
+            <div className="card-body p-4 p-md-5">
 
+              <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
 
-                    <div className="col-md-4">
+                <div>
 
-                      <p className="mb-1">
-                        <strong>Phone:</strong>
-                      </p>
+                  <h4
+                    className="fw-bold mb-1"
+                    style={{ color: "#0f5132" }}
+                  >
+                    Deposit Money
+                  </h4>
 
-                      <p>
-                        {item.phone}
-                      </p>
+                  <p className="text-muted mb-0">
+                    Add money to your Veran Enterprise wallet.
+                  </p>
 
-                    </div>
+                </div>
 
+                <span className="badge bg-warning text-dark px-3 py-2">
+                  STK Temporarily Unavailable
+                </span>
 
-                    <div className="col-md-4">
+              </div>
 
-                      <p className="mb-1">
-                        <strong>Status:</strong>
-                      </p>
+              <div className="row">
 
-                      <span
-                        className={`badge ${
-                          item.status === "approved"
-                            ? "bg-success"
-                            : item.status ===
-                              "rejected"
-                            ? "bg-danger"
-                            : "bg-warning text-dark"
-                        }`}
-                      >
-                        {item.status
-                          ?.charAt(0)
-                          .toUpperCase() +
-                          item.status?.slice(1)}
-                      </span>
+                <div className="col-md-6 mb-3">
 
-                    </div>
+                  <label className="form-label fw-semibold">
+                    Deposit Amount
+                  </label>
+
+                  <div className="input-group input-group-lg">
+
+                    <span className="input-group-text">
+                      KES
+                    </span>
+
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-control"
+                      placeholder="Enter amount"
+                      value={amount}
+                      onChange={(e) =>
+                        setAmount(e.target.value)
+                      }
+                    />
 
                   </div>
 
-
-                  <hr />
-
-
-                  <p className="mb-1">
-                    <strong>Till:</strong>{" "}
-                    {item.tillNumber}
-                  </p>
-
-                  <p className="mb-1">
-                    <strong>Reference:</strong>{" "}
-                    {item.reference}
-                  </p>
-
-                  <p className="mb-1">
-                    <strong>Date:</strong>{" "}
-                    {item.createdAt
-                      ? new Date(
-                          item.createdAt
-                        ).toLocaleString()
-                      : "-"}
-                  </p>
-
-
-                  {item.adminNote && (
-
-                    <p className="mb-0 mt-2 text-muted">
-                      <strong>Admin Note:</strong>{" "}
-                      {item.adminNote}
-                    </p>
-
-                  )}
-
                 </div>
 
-              ))
+                <div className="col-md-6 mb-3">
 
-            )}
-
-          </div>
-
-        </div>
-
-
-        {/* ==========================================
-            WITHDRAW MONEY
-        ========================================== */}
-
-        <div className="card border-0 shadow-sm rounded-4 mb-5">
-
-          <div className="card-body p-4">
-
-            <h4 className="fw-bold mb-1">
-              Withdraw Money
-            </h4>
-
-            <p className="text-muted mb-4">
-              Request a withdrawal from your wallet
-              to your M-Pesa number.
-            </p>
-
-
-            <div className="row">
-
-              {/* Withdrawal Amount */}
-
-              <div className="col-md-6 mb-3">
-
-                <label className="form-label fw-semibold">
-                  Withdrawal Amount
-                </label>
-
-                <div className="input-group input-group-lg">
-
-                  <span className="input-group-text">
-                    KES
-                  </span>
+                  <label className="form-label fw-semibold">
+                    M-Pesa Phone Number
+                  </label>
 
                   <input
-                    type="number"
-                    className="form-control"
-                    placeholder="Enter amount"
-                    value={withdrawAmount}
+                    type="text"
+                    className="form-control form-control-lg"
+                    placeholder="2547XXXXXXXX"
+                    value={phone}
                     onChange={(e) =>
-                      setWithdrawAmount(
-                        e.target.value
-                      )
+                      setPhone(e.target.value)
                     }
                   />
 
@@ -737,95 +451,652 @@ export default function Wallet() {
 
               </div>
 
+              <div className="d-grid">
 
-              {/* Withdrawal Phone */}
-
-              <div className="col-md-6 mb-3">
-
-                <label className="form-label fw-semibold">
-                  M-Pesa Phone Number
-                </label>
-
-                <input
-                  type="text"
-                  className="form-control form-control-lg"
-                  placeholder="2547XXXXXXXX"
-                  value={withdrawPhone}
-                  onChange={(e) =>
-                    setWithdrawPhone(
-                      e.target.value
-                    )
+                <button
+                  type="button"
+                  className="btn btn-success btn-lg rounded-3"
+                  onClick={handleStkDeposit}
+                  disabled={
+                    loading || checkingPayment
                   }
-                />
+                >
+                  {checkingPayment
+                    ? "Checking Payment..."
+                    : "Deposit via M-Pesa STK"}
+                </button>
 
-                <small className="text-muted">
-                  Enter the M-Pesa number where you
-                  want to receive the withdrawal.
-                </small>
+              </div>
+
+              <div
+                className="alert border-0 rounded-3 mt-4 mb-0"
+                style={{
+                  backgroundColor: "#fff3cd",
+                  color: "#664d03",
+                }}
+              >
+
+                <div className="d-flex gap-2">
+
+                  <span>⚠️</span>
+
+                  <div>
+
+                    <strong>
+                      M-Pesa STK Push is temporarily unavailable
+                    </strong>
+
+                    <p className="mb-0 mt-1 small">
+                      You can still fund your wallet using
+                      the manual M-Pesa deposit option below.
+                    </p>
+
+                  </div>
+
+                </div>
 
               </div>
 
             </div>
+          </div>
 
+          {/* ==========================================
+              MANUAL DEPOSIT
+          ========================================== */}
 
-            <div className="d-grid mt-2">
+          <div
+            id="manual-deposit"
+            className="card border-0 shadow-sm rounded-4 mb-5 overflow-hidden"
+            style={{
+              borderTop: "4px solid #ffc107",
+            }}
+          >
 
-              <button
-                type="button"
-                className="btn btn-danger btn-lg rounded-3"
-                onClick={withdraw}
-                disabled={withdrawLoading}
+            <div className="card-body p-4 p-md-5">
+
+              <div className="mb-4">
+
+                <h4
+                  className="fw-bold mb-1"
+                  style={{ color: "#0f5132" }}
+                >
+                  Manual M-Pesa Deposit
+                </h4>
+
+                <p className="text-muted mb-0">
+                  Pay using M-Pesa Buy Goods and Services,
+                  then submit your payment details below.
+                </p>
+
+              </div>
+
+              {/* ==========================================
+                  TILL PAYMENT CARD
+              ========================================== */}
+
+              <div
+                className="rounded-4 p-4 mb-4 text-center"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #0f5132 0%, #198754 100%)",
+                  color: "white",
+                }}
               >
-                {withdrawLoading
-                  ? "Submitting Withdrawal..."
-                  : "Request Withdrawal"}
-              </button>
+
+                <span
+                  className="badge rounded-pill mb-2"
+                  style={{
+                    backgroundColor: "#ffc107",
+                    color: "#212529",
+                  }}
+                >
+                  M-PESA PAYMENT
+                </span>
+
+                <p className="mb-1 opacity-75">
+                  Veran Enterprise Buy Goods & Services
+                </p>
+
+                <h6 className="fw-semibold mb-2">
+                  Till Number
+                </h6>
+
+                <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap">
+
+                  <h1 className="fw-bold mb-0">
+                    {TILL_NUMBER}
+                  </h1>
+
+                  <button
+                    type="button"
+                    className={`btn ${
+                      copiedTill
+                        ? "btn-success"
+                        : "btn-light"
+                    } px-4 rounded-pill fw-semibold`}
+                    onClick={copyTillNumber}
+                  >
+                    {copiedTill
+                      ? "✓ Till Number Copied"
+                      : "📋 Copy Till Number"}
+                  </button>
+
+                </div>
+
+                <small className="d-block mt-3 opacity-75">
+                  Tap the button above to copy the Till Number.
+                </small>
+
+              </div>
+
+              {/* ==========================================
+                  PAYMENT INSTRUCTIONS
+              ========================================== */}
+
+              <div
+                className="rounded-4 p-4 mb-4"
+                style={{
+                  backgroundColor: "#fff9e6",
+                  border: "1px solid #ffe69c",
+                }}
+              >
+
+                <h6
+                  className="fw-bold mb-3"
+                  style={{ color: "#664d03" }}
+                >
+                  How to Deposit
+                </h6>
+
+                <ol className="mb-0">
+
+                  <li className="mb-2">
+                    Open <strong>M-Pesa</strong> on your phone.
+                  </li>
+
+                  <li className="mb-2">
+                    Select <strong>Lipa na M-Pesa</strong>.
+                  </li>
+
+                  <li className="mb-2">
+                    Select{" "}
+                    <strong>
+                      Buy Goods and Services
+                    </strong>.
+                  </li>
+
+                  <li className="mb-2">
+                    Enter Till Number{" "}
+                    <strong>{TILL_NUMBER}</strong>.
+                  </li>
+
+                  <li className="mb-2">
+                    Enter the amount you want to deposit.
+                  </li>
+
+                  <li className="mb-2">
+                    Confirm and complete the M-Pesa payment.
+                  </li>
+
+                  <li>
+                    Return here and submit the amount and
+                    phone number used for the payment.
+                  </li>
+
+                </ol>
+
+              </div>
+
+              {/* ==========================================
+                  MANUAL DEPOSIT FORM
+              ========================================== */}
+
+              <div className="row">
+
+                <div className="col-md-6 mb-3">
+
+                  <label className="form-label fw-semibold">
+                    Deposit Amount
+                  </label>
+
+                  <div className="input-group input-group-lg">
+
+                    <span className="input-group-text">
+                      KES
+                    </span>
+
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-control"
+                      placeholder="Enter amount paid"
+                      value={manualAmount}
+                      onChange={(e) =>
+                        setManualAmount(
+                          e.target.value
+                        )
+                      }
+                    />
+
+                  </div>
+
+                </div>
+
+                <div className="col-md-6 mb-3">
+
+                  <label className="form-label fw-semibold">
+                    M-Pesa Phone Used
+                  </label>
+
+                  <input
+                    type="text"
+                    className="form-control form-control-lg"
+                    placeholder="2547XXXXXXXX"
+                    value={manualPhone}
+                    onChange={(e) =>
+                      setManualPhone(
+                        e.target.value
+                      )
+                    }
+                  />
+
+                  <small className="text-muted">
+                    Enter the phone number that made
+                    the M-Pesa payment.
+                  </small>
+
+                </div>
+
+              </div>
+
+              <div className="d-grid">
+
+                <button
+                  type="button"
+                  className="btn btn-primary btn-lg rounded-3"
+                  onClick={submitManualDeposit}
+                  disabled={manualLoading}
+                  style={{
+                    backgroundColor: "#0f5132",
+                    borderColor: "#0f5132",
+                  }}
+                >
+                  {manualLoading
+                    ? "Submitting Deposit..."
+                    : "Submit Manual Deposit"}
+                </button>
+
+              </div>
+
+              <div
+                className="alert border-0 rounded-3 mt-4 mb-0"
+                style={{
+                  backgroundColor: "#e8f5e9",
+                  color: "#0f5132",
+                }}
+              >
+
+                <strong>
+                  Important:
+                </strong>
+
+                <p className="mb-0 mt-1 small">
+                  Your wallet will be credited after the
+                  payment has been reviewed and approved.
+                  Please make sure the amount and phone
+                  number you submit match your M-Pesa payment.
+                </p>
+
+              </div>
 
             </div>
+          </div>
 
+          {/* ==========================================
+              DEPOSIT HISTORY
+          ========================================== */}
 
-            <div className="alert alert-warning border-0 rounded-3 mt-4 mb-0">
+          <div className="card border-0 shadow-sm rounded-4 mb-5">
 
-              <strong>
-                Withdrawal Notice
-              </strong>
+            <div className="card-body p-4 p-md-5">
 
-              <p className="mb-0 mt-1 small">
-                Withdrawal requests are reviewed and
-                processed by Veran Enterprise. Make sure
-                the M-Pesa phone number and amount are
-                correct before submitting.
-              </p>
+              <div className="d-flex justify-content-between align-items-center mb-4">
+
+                <div>
+
+                  <h4
+                    className="fw-bold mb-1"
+                    style={{ color: "#0f5132" }}
+                  >
+                    Deposit History
+                  </h4>
+
+                  <p className="text-muted mb-0">
+                    Track your manual deposit requests.
+                  </p>
+
+                </div>
+
+                <span className="badge bg-light text-dark border px-3 py-2">
+                  {manualDeposits.length}{" "}
+                  {manualDeposits.length === 1
+                    ? "Request"
+                    : "Requests"}
+                </span>
+
+              </div>
+
+              {manualDeposits.length === 0 ? (
+
+                <div className="text-center py-5">
+
+                  <div
+                    className="rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                    style={{
+                      width: "65px",
+                      height: "65px",
+                      backgroundColor: "#e8f5e9",
+                      fontSize: "26px",
+                    }}
+                  >
+                    📋
+                  </div>
+
+                  <h6 className="fw-bold">
+                    No deposit requests yet
+                  </h6>
+
+                  <p className="text-muted small mb-0">
+                    Your manual deposit requests will
+                    appear here.
+                  </p>
+
+                </div>
+
+              ) : (
+
+                manualDeposits.map((item) => (
+
+                  <div
+                    key={item._id}
+                    className="border rounded-4 p-3 p-md-4 mb-3"
+                  >
+
+                    <div className="row g-3">
+
+                      <div className="col-md-4">
+
+                        <small className="text-muted d-block">
+                          Amount
+                        </small>
+
+                        <h5
+                          className="fw-bold mb-0"
+                          style={{
+                            color: "#198754",
+                          }}
+                        >
+                          KES{" "}
+                          {Number(
+                            item.amount
+                          ).toLocaleString()}
+                        </h5>
+
+                      </div>
+
+                      <div className="col-md-4">
+
+                        <small className="text-muted d-block">
+                          M-Pesa Phone
+                        </small>
+
+                        <p className="fw-semibold mb-0">
+                          {item.phone || "-"}
+                        </p>
+
+                      </div>
+
+                      <div className="col-md-4">
+
+                        <small className="text-muted d-block mb-1">
+                          Status
+                        </small>
+
+                        <span
+                          className={`badge ${getStatusBadge(
+                            item.status
+                          )} px-3 py-2`}
+                        >
+                          {getStatusText(item.status)}
+                        </span>
+
+                      </div>
+
+                    </div>
+
+                    <hr />
+
+                    <div className="row g-2 small">
+
+                      <div className="col-md-4">
+                        <strong>Till:</strong>{" "}
+                        {item.tillNumber ||
+                          TILL_NUMBER}
+                      </div>
+
+                      <div className="col-md-4">
+                        <strong>Reference:</strong>{" "}
+                        {item.reference || "-"}
+                      </div>
+
+                      <div className="col-md-4">
+                        <strong>Date:</strong>{" "}
+                        {item.createdAt
+                          ? new Date(
+                              item.createdAt
+                            ).toLocaleString()
+                          : "-"}
+                      </div>
+
+                    </div>
+
+                    {item.adminNote && (
+
+                      <div
+                        className="rounded-3 p-3 mt-3 small"
+                        style={{
+                          backgroundColor: "#f8f9fa",
+                        }}
+                      >
+
+                        <strong>
+                          Admin Note:
+                        </strong>{" "}
+                        {item.adminNote}
+
+                      </div>
+
+                    )}
+
+                  </div>
+
+                ))
+
+              )}
+
+            </div>
+          </div>
+
+          {/* ==========================================
+              WITHDRAWAL
+          ========================================== */}
+
+          <div
+            className="card border-0 shadow-sm rounded-4 mb-5 overflow-hidden"
+            style={{
+              borderTop: "4px solid #dc3545",
+            }}
+          >
+
+            <div className="card-body p-4 p-md-5">
+
+              <div className="mb-4">
+
+                <h4
+                  className="fw-bold mb-1"
+                  style={{ color: "#842029" }}
+                >
+                  Withdraw Money
+                </h4>
+
+                <p className="text-muted mb-0">
+                  Request a withdrawal from your wallet
+                  to your M-Pesa number.
+                </p>
+
+              </div>
+
+              <div className="row">
+
+                <div className="col-md-6 mb-3">
+
+                  <label className="form-label fw-semibold">
+                    Withdrawal Amount
+                  </label>
+
+                  <div className="input-group input-group-lg">
+
+                    <span className="input-group-text">
+                      KES
+                    </span>
+
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-control"
+                      placeholder="Enter amount"
+                      value={withdrawAmount}
+                      onChange={(e) =>
+                        setWithdrawAmount(
+                          e.target.value
+                        )
+                      }
+                    />
+
+                  </div>
+
+                  <small className="text-muted">
+                    Available: KES{" "}
+                    {Number(
+                      balance
+                    ).toLocaleString()}
+                  </small>
+
+                </div>
+
+                <div className="col-md-6 mb-3">
+
+                  <label className="form-label fw-semibold">
+                    M-Pesa Phone Number
+                  </label>
+
+                  <input
+                    type="text"
+                    className="form-control form-control-lg"
+                    placeholder="2547XXXXXXXX"
+                    value={withdrawPhone}
+                    onChange={(e) =>
+                      setWithdrawPhone(
+                        e.target.value
+                      )
+                    }
+                  />
+
+                  <small className="text-muted">
+                    Enter the M-Pesa number where you
+                    want to receive the withdrawal.
+                  </small>
+
+                </div>
+
+              </div>
+
+              <div className="d-grid mt-2">
+
+                <button
+                  type="button"
+                  className="btn btn-danger btn-lg rounded-3"
+                  onClick={withdraw}
+                  disabled={withdrawLoading}
+                >
+                  {withdrawLoading
+                    ? "Submitting Withdrawal..."
+                    : "Request Withdrawal"}
+                </button>
+
+              </div>
+
+              <div className="alert alert-warning border-0 rounded-3 mt-4 mb-0">
+
+                <strong>
+                  Withdrawal Notice
+                </strong>
+
+                <p className="mb-0 mt-1 small">
+                  Withdrawal requests are reviewed and
+                  processed by Veran Enterprise. Please
+                  verify the amount and M-Pesa number
+                  before submitting.
+                </p>
+
+              </div>
+
+            </div>
+          </div>
+
+          {/* ==========================================
+              SECURITY
+          ========================================== */}
+
+          <div
+            className="rounded-4 p-4 mb-4"
+            style={{
+              backgroundColor: "#e8f5e9",
+              border: "1px solid #c8e6c9",
+            }}
+          >
+
+            <div className="d-flex gap-3">
+
+              <div style={{ fontSize: "25px" }}>
+                🔐
+              </div>
+
+              <div>
+
+                <h6
+                  className="fw-bold mb-1"
+                  style={{ color: "#0f5132" }}
+                >
+                  Wallet Security
+                </h6>
+
+                <p className="mb-0 small text-muted">
+                  Keep your account information accurate
+                  and secure. Deposit and withdrawal
+                  transactions may be reviewed to help
+                  protect users and prevent fraudulent
+                  activity.
+                </p>
+
+              </div>
 
             </div>
 
           </div>
 
         </div>
-
-
-        {/* ==========================================
-            WALLET NOTICE
-        ========================================== */}
-
-        <div className="alert alert-light border rounded-4">
-
-          <h6 className="fw-bold">
-            Wallet Security
-          </h6>
-
-          <p className="mb-0 small text-muted">
-            Keep your account information accurate and
-            secure. Veran Enterprise may review deposits,
-            withdrawals, and other wallet transactions
-            to protect users and prevent fraudulent
-            activity.
-          </p>
-
-        </div>
-
       </div>
-
 
       {/* ==========================================
           STK UNAVAILABLE MODAL
@@ -837,8 +1108,7 @@ export default function Wallet() {
           className="modal d-block"
           tabIndex="-1"
           style={{
-            backgroundColor:
-              "rgba(0,0,0,0.6)",
+            backgroundColor: "rgba(0,0,0,0.65)",
           }}
         >
 
@@ -846,10 +1116,13 @@ export default function Wallet() {
 
             <div className="modal-content border-0 shadow-lg rounded-4">
 
-              <div className="modal-header border-0">
+              <div className="modal-header border-0 px-4 pt-4">
 
-                <h5 className="modal-title fw-bold">
-                  STK Push Temporarily Unavailable
+                <h5
+                  className="modal-title fw-bold"
+                  style={{ color: "#0f5132" }}
+                >
+                  STK Push Unavailable
                 </h5>
 
                 <button
@@ -862,99 +1135,126 @@ export default function Wallet() {
 
               </div>
 
-
-              <div className="modal-body">
+              <div className="modal-body px-4">
 
                 <div className="text-center mb-4">
 
                   <div
-                    className="rounded-circle bg-warning d-inline-flex align-items-center justify-content-center mb-3"
+                    className="rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
                     style={{
                       width: "70px",
                       height: "70px",
-                      fontSize: "32px",
+                      backgroundColor: "#fff3cd",
+                      fontSize: "30px",
                     }}
                   >
                     ⚠️
                   </div>
 
                   <h5 className="fw-bold">
-                    M-Pesa STK Push is currently
-                    unavailable
+                    M-Pesa STK Push is temporarily unavailable
                   </h5>
 
-                  <p className="text-muted">
-                    We're making a few improvements to
-                    our M-Pesa payment service.
+                  <p className="text-muted mb-0">
+                    We're currently making improvements
+                    to our M-Pesa payment service.
                   </p>
 
                 </div>
 
+                {/* MODAL TILL */}
 
-                <div className="alert alert-info rounded-3">
+                <div
+                  className="rounded-4 p-4 text-center mb-4"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #0f5132 0%, #198754 100%)",
+                    color: "white",
+                  }}
+                >
 
-                  <strong>
-                    You can still deposit manually.
-                  </strong>
+                  <small className="opacity-75">
+                    You can still deposit manually using
+                  </small>
 
-                  <p className="mb-0 mt-2">
-                    Pay through M-Pesa Buy Goods and
-                    Services using:
-                  </p>
+                  <h6 className="fw-bold mt-2 mb-2">
+                    Buy Goods and Services Till
+                  </h6>
 
-                  <h4 className="fw-bold mt-2 mb-0">
-                    Till 9207399
-                  </h4>
+                  <h2 className="fw-bold mb-3">
+                    {TILL_NUMBER}
+                  </h2>
+
+                  <button
+                    type="button"
+                    className={`btn ${
+                      copiedTill
+                        ? "btn-success"
+                        : "btn-light"
+                    } rounded-pill px-4 fw-semibold`}
+                    onClick={copyTillNumber}
+                  >
+                    {copiedTill
+                      ? "✓ Copied"
+                      : "📋 Copy Till Number"}
+                  </button>
 
                 </div>
 
-
-                <h6 className="fw-bold">
-                  How to deposit
+                <h6
+                  className="fw-bold"
+                  style={{ color: "#0f5132" }}
+                >
+                  Quick Deposit Steps
                 </h6>
 
                 <ol className="small">
 
-                  <li>
+                  <li className="mb-2">
                     Open M-Pesa.
                   </li>
 
-                  <li>
-                    Select Lipa na M-Pesa.
+                  <li className="mb-2">
+                    Select{" "}
+                    <strong>
+                      Lipa na M-Pesa
+                    </strong>.
                   </li>
 
-                  <li>
-                    Select Buy Goods and Services.
+                  <li className="mb-2">
+                    Select{" "}
+                    <strong>
+                      Buy Goods and Services
+                    </strong>.
                   </li>
 
-                  <li>
+                  <li className="mb-2">
                     Enter Till Number{" "}
-                    <strong>9207399</strong>.
+                    <strong>{TILL_NUMBER}</strong>.
                   </li>
 
-                  <li>
+                  <li className="mb-2">
                     Enter your deposit amount.
                   </li>
 
-                  <li>
-                    Complete the payment.
+                  <li className="mb-2">
+                    Confirm and complete the payment.
                   </li>
 
                   <li>
-                    Submit your payment details
-                    under Manual Deposit.
+                    Submit the payment details under
+                    Manual Deposit.
                   </li>
 
                 </ol>
 
               </div>
 
-
-              <div className="modal-footer border-0">
+              <div className="modal-footer border-0 px-4 pb-4">
 
                 <button
                   type="button"
-                  className="btn btn-primary rounded-3"
+                  className="btn btn-success rounded-3 px-4"
                   onClick={goToManualDeposit}
                 >
                   Continue with Manual Deposit
@@ -979,7 +1279,6 @@ export default function Wallet() {
         </div>
 
       )}
-
     </>
   );
 }
