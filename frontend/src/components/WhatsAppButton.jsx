@@ -5,7 +5,7 @@ export default function WhatsAppButton() {
   return (
 
     <a
-      href="https://wa.me/qr/JSXNIJSUMUP7A1"
+      href="https://whatsapp.com/channel/0029VbE1fZ50AgWFhmH4VO3e"
       target="_blank"
       rel="noopener noreferrer"
       className="btn btn-success rounded-circle shadow-lg"
