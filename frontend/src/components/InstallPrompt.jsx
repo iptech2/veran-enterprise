@@ -203,9 +203,12 @@
 //   );
 // }
 
-
 import { useEffect, useState } from "react";
-import { FaDownload, FaTimes, FaCheckCircle } from "react-icons/fa";
+import {
+  FaDownload,
+  FaTimes,
+  FaCheckCircle
+} from "react-icons/fa";
 
 export default function InstallPrompt() {
   const [installEvent, setInstallEvent] = useState(null);
@@ -246,7 +249,10 @@ export default function InstallPrompt() {
       handleBeforeInstall
     );
 
-    window.addEventListener("appinstalled", handleInstalled);
+    window.addEventListener(
+      "appinstalled",
+      handleInstalled
+    );
 
     setShowPrompt(true);
 
@@ -266,19 +272,22 @@ export default function InstallPrompt() {
   const handleInstall = async () => {
     if (!installEvent) {
       setMessage(
-        "Installation is not available through this button right now. Please check Chrome's Install option."
+        "Veran installation is not currently available. Please try again or use Chrome's installation option."
       );
       return;
     }
 
     try {
-      await installEvent.prompt();
+      const deferredPrompt = installEvent;
 
-      const choice = await installEvent.userChoice;
+      // Open the browser's native installation prompt.
+      await deferredPrompt.prompt();
+
+      const choice = await deferredPrompt.userChoice;
 
       if (choice.outcome === "accepted") {
         setShowPrompt(false);
-        setMessage("Veran installation started.");
+        setMessage("Veran installation started successfully!");
       }
 
       setInstallEvent(null);
@@ -290,6 +299,7 @@ export default function InstallPrompt() {
 
   const dismissPrompt = () => {
     setShowPrompt(false);
+
     sessionStorage.setItem(
       "veran-install-dismissed",
       "true"
@@ -311,6 +321,7 @@ export default function InstallPrompt() {
       >
         <div className="container">
           <div className="d-flex align-items-center justify-content-between gap-3">
+
             <div className="d-flex align-items-center gap-3">
               <div
                 className="rounded-3 d-flex align-items-center justify-content-center shadow-sm"
@@ -326,10 +337,12 @@ export default function InstallPrompt() {
               </div>
 
               <div>
-               
+                <div className="fw-bold text-dark">
+                  Veran Enterprise
+                </div>
 
                 <small className="text-secondary">
-                  Your investment 
+                  Your investment companion.
                 </small>
               </div>
             </div>
@@ -342,7 +355,7 @@ export default function InstallPrompt() {
                 style={{ whiteSpace: "nowrap" }}
               >
                 <FaDownload className="me-2" />
-                Istall now
+                INSTALL NOW
               </button>
 
               <button
@@ -354,6 +367,7 @@ export default function InstallPrompt() {
                 <FaTimes />
               </button>
             </div>
+
           </div>
         </div>
       </div>
@@ -370,7 +384,9 @@ export default function InstallPrompt() {
         >
           <div className="d-flex align-items-center gap-2">
             <FaCheckCircle className="text-success" />
+
             <small>{message}</small>
+
             <button
               className="btn btn-sm text-white ms-auto"
               onClick={() => setMessage("")}
@@ -385,4 +401,3 @@ export default function InstallPrompt() {
   );
 }
 
- 
