@@ -342,7 +342,7 @@ export default function InstallPrompt() {
                 style={{ whiteSpace: "nowrap" }}
               >
                 <FaDownload className="me-2" />
-                INSTALL NOW
+                Istall now
               </button>
 
               <button
