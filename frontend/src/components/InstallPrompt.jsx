@@ -5,8 +5,8 @@ import { FaDownload, FaTimes } from "react-icons/fa";
 export default function InstallPrompt() {
   const [installEvent, setInstallEvent] = useState(null);
   const [showPrompt, setShowPrompt] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
-  const [showIOSGuide, setShowIOSGuide] = useState(false);
 
   useEffect(() => {
     const isInstalled =
@@ -20,16 +20,15 @@ export default function InstallPrompt() {
 
     if (dismissed) return;
 
-    const ios =
-      /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+    const ios = /iphone|ipad|ipod/i.test(
+      window.navigator.userAgent
+    );
 
     setIsIOS(ios);
 
     const handleBeforeInstall = (event) => {
       event.preventDefault();
-
       setInstallEvent(event);
-      setShowPrompt(true);
     };
 
     const handleInstalled = () => {
@@ -42,15 +41,11 @@ export default function InstallPrompt() {
       handleBeforeInstall
     );
 
-    window.addEventListener(
-      "appinstalled",
-      handleInstalled
-    );
+    window.addEventListener("appinstalled", handleInstalled);
 
-    // iOS does not support beforeinstallprompt.
-    if (ios) {
-      setShowPrompt(true);
-    }
+    // Show the banner even when Chrome does not provide
+    // the native installation prompt.
+    setShowPrompt(true);
 
     return () => {
       window.removeEventListener(
@@ -79,9 +74,7 @@ export default function InstallPrompt() {
       return;
     }
 
-    if (isIOS) {
-      setShowIOSGuide(true);
-    }
+    setShowGuide(true);
   };
 
   const dismissPrompt = () => {
@@ -108,7 +101,6 @@ export default function InstallPrompt() {
       >
         <div className="container">
           <div className="d-flex align-items-center justify-content-between gap-2">
-
             <div className="d-flex align-items-center gap-2">
               <div
                 className="rounded-3 d-flex align-items-center justify-content-center"
@@ -129,7 +121,7 @@ export default function InstallPrompt() {
                 </div>
 
                 <small className="text-secondary">
-                  Get faster access from your phone.
+                  Access Veran easily from your device.
                 </small>
               </div>
             </div>
@@ -152,12 +144,11 @@ export default function InstallPrompt() {
                 <FaTimes />
               </button>
             </div>
-
           </div>
         </div>
       </div>
 
-      {showIOSGuide && (
+      {showGuide && (
         <div
           className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3"
           style={{
@@ -165,28 +156,43 @@ export default function InstallPrompt() {
             zIndex: 2000
           }}
         >
-          <div className="bg-white rounded-4 p-4 shadow w-100"
-            style={{ maxWidth: 380 }}
+          <div
+            className="bg-white rounded-4 p-4 shadow w-100"
+            style={{ maxWidth: 400 }}
           >
             <h5 className="fw-bold">
-              Install Veran on your iPhone
+              Install Veran Enterprise
             </h5>
 
-            <p>
-              1. Tap the Share button in Safari.
-            </p>
-
-            <p>
-              2. Select "Add to Home Screen".
-            </p>
-
-            <p>
-              3. Tap "Add" to install Veran.
-            </p>
+            {isIOS ? (
+              <>
+                <p>1. Open Veran in Safari.</p>
+                <p>2. Tap the Share button.</p>
+                <p>3. Select "Add to Home Screen".</p>
+                <p>4. Tap "Add".</p>
+              </>
+            ) : (
+              <>
+                <p>
+                  Open Veran in Google Chrome and follow
+                  these steps:
+                </p>
+                <p>
+                  1. Open the three-dot menu in Chrome.
+                </p>
+                <p>
+                  2. Select "Install Veran Enterprise"
+                  or "Install page as app", if available.
+                </p>
+                <p>
+                  3. Follow the installation instructions.
+                </p>
+              </>
+            )}
 
             <button
               className="btn btn-success w-100"
-              onClick={() => setShowIOSGuide(false)}
+              onClick={() => setShowGuide(false)}
             >
               Got it
             </button>
