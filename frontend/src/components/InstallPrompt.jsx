@@ -181,8 +181,7 @@ export default function InstallPrompt() {
                   1. Open the three-dot menu in Chrome.
                 </p>
                 <p>
-                  2. Select "Install Veran Enterprise"
-                  or "Install page as app", if available.
+                  2. Scroll downwards to find "Install and create shortcut".
                 </p>
                 <p>
                   3. Follow the installation instructions.
