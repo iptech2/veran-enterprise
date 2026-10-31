@@ -326,12 +326,10 @@ export default function InstallPrompt() {
               </div>
 
               <div>
-                <div className="fw-bold text-dark">
-                  Install Veran Enterprise
-                </div>
+               
 
                 <small className="text-secondary">
-                  Your investment companion. Always within reach.
+                  Your investment 
                 </small>
               </div>
             </div>
