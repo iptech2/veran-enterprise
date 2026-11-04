@@ -6,6 +6,7 @@ import Navbar from "../components/Navbar";
 export default function Login() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -15,18 +16,32 @@ export default function Login() {
 
     if (loading) return;
 
+    const cleanIdentifier = identifier.trim();
+
+    if (!cleanIdentifier) {
+      alert("Please enter your phone number or email address.");
+      return;
+    }
+
+    if (!password) {
+      alert("Please enter your password.");
+      return;
+    }
+
+    // Detect whether the user entered an email or phone number.
+    const isEmail = cleanIdentifier.includes("@");
+
+    const loginData = {
+      ...(isEmail
+        ? { email: cleanIdentifier.toLowerCase() }
+        : { phone: cleanIdentifier }),
+      password,
+    };
+
     setLoading(true);
 
     try {
-      const cleanIdentifier = identifier.trim();
-
-      const isEmail = cleanIdentifier.includes("@");
-
-      const res = await api.post("/auth/login", {
-        email: isEmail ? cleanIdentifier : undefined,
-        phone: !isEmail ? cleanIdentifier : undefined,
-        password,
-      });
+      const res = await api.post("/auth/login", loginData);
 
       const { token, user } = res.data;
 
@@ -38,7 +53,7 @@ export default function Login() {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      // Redirect immediately
+      // Redirect according to account role
       if (user.role === "admin") {
         navigate("/admin", { replace: true });
       } else {
@@ -50,7 +65,7 @@ export default function Login() {
 
       alert(
         err.response?.data?.message ||
-        "Login failed. Please check your details and try again."
+          "Login failed. Please check your phone number or email and password."
       );
 
     } finally {
@@ -67,19 +82,19 @@ export default function Login() {
         style={{ minHeight: "80vh" }}
       >
         <div
-          className="card shadow p-4"
-          style={{ width: "360px" }}
+          className="card shadow p-4 border-0 rounded-4"
+          style={{ width: "360px", maxWidth: "100%" }}
         >
-          <h3 className="text-center mb-3">
+          <h3 className="text-center mb-3 fw-bold">
             Login
           </h3>
 
           <form onSubmit={handleLogin}>
-
+            {/* Phone number or email */}
             <input
               type="text"
-              className="form-control mb-2"
-              placeholder="Email or Phone"
+              className="form-control mb-3"
+              placeholder="Phone Number (or Email Address)"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               autoComplete="username"
@@ -87,20 +102,35 @@ export default function Login() {
               disabled={loading}
             />
 
-            <input
-              type="password"
-              className="form-control mb-3"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-              disabled={loading}
-            />
+            {/* Password with show/hide */}
+            <div className="input-group mb-3">
+              <input
+                type={showPassword ? "text" : "password"}
+                className="form-control"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+                disabled={loading}
+              />
+
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => setShowPassword((prev) => !prev)}
+                disabled={loading}
+                aria-label={
+                  showPassword ? "Hide password" : "Show password"
+                }
+              >
+                {showPassword ? "🙈" : "👁️"}
+              </button>
+            </div>
 
             <button
               type="submit"
-              className="btn btn-primary w-100"
+              className="btn btn-primary w-100 rounded-3"
               disabled={loading}
             >
               {loading ? "Logging in..." : "Login"}
@@ -118,7 +148,6 @@ export default function Login() {
                 Sign up
               </Link>
             </div>
-
           </form>
         </div>
       </div>

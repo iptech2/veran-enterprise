@@ -70,6 +70,25 @@ export default function Wallet() {
   // LOAD DATA
   // ==========================================
   useEffect(() => {
+    // Prefill all M-Pesa fields with the phone number used during registration.
+    // The fields remain editable in case the user wants to use another number.
+    try {
+      const savedUser = JSON.parse(
+        localStorage.getItem("user") || "{}"
+      );
+
+      const registeredPhone =
+        savedUser?.phone || savedUser?.user?.phone || "";
+
+      if (registeredPhone) {
+        setPhone(String(registeredPhone));
+        setManualPhone(String(registeredPhone));
+        setWithdrawPhone(String(registeredPhone));
+      }
+    } catch (err) {
+      console.log("Unable to read the registered phone number:", err);
+    }
+
     loadWallet();
     loadManualDeposits();
   }, []);
@@ -124,7 +143,6 @@ export default function Wallet() {
       }, 5000);
 
       setAmount("");
-      setPhone("");
     } catch (err) {
       alert(
         err.response?.data?.message ||
@@ -191,7 +209,6 @@ export default function Wallet() {
       );
 
       setManualAmount("");
-      setManualPhone("");
 
       await loadManualDeposits();
     } catch (err) {
@@ -245,7 +262,6 @@ export default function Wallet() {
       );
 
       setWithdrawAmount("");
-      setWithdrawPhone("");
 
       await loadWallet();
     } catch (err) {
@@ -499,8 +515,7 @@ export default function Wallet() {
 
             </div>
           </div>
-
-          {/* ==========================================
+                    {/* ==========================================
               MANUAL DEPOSIT
           ========================================== */}
 
@@ -926,8 +941,7 @@ export default function Wallet() {
 
             </div>
           </div>
-
-          {/* ==========================================
+                    {/* ==========================================
               WITHDRAWAL
           ========================================== */}
 
@@ -1097,164 +1111,165 @@ export default function Wallet() {
 
         </div>
       </div>
-{/* ==========================================
-    PAYMENT PARTNERS
-========================================== */}
 
-<div
-  className="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden"
->
-  <div className="card-body p-4">
+      {/* ==========================================
+          PAYMENT PARTNERS
+      ========================================== */}
 
-    <div className="text-center mb-4">
-
-      <h5
-        className="fw-bold mb-1"
-        style={{ color: "#0f5132" }}
+      <div
+        className="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden"
       >
-        Payment Options
-      </h5>
+        <div className="card-body p-4">
 
-      <p className="text-muted small mb-0">
-        Convenient payment services supported by Veran Enterprise.
-      </p>
+          <div className="text-center mb-4">
 
-    </div>
+            <h5
+              className="fw-bold mb-1"
+              style={{ color: "#0f5132" }}
+            >
+              Payment Options
+            </h5>
 
-    <div className="row g-3 justify-content-center">
+            <p className="text-muted small mb-0">
+              Convenient payment services supported by Veran Enterprise.
+            </p>
 
-      {/* M-PESA */}
-      <div className="col-6 col-sm-4 col-md-2">
-        <div
-          className="border rounded-4 p-3 bg-white text-center h-100 d-flex align-items-center justify-content-center"
-          style={{
-            minHeight: "90px",
-          }}
-        >
-          <img
-            src="/partners/mpesa.png"
-            alt="M-Pesa"
-            className="img-fluid"
+          </div>
+
+          <div className="row g-3 justify-content-center">
+
+            {/* M-PESA */}
+            <div className="col-6 col-sm-4 col-md-2">
+              <div
+                className="border rounded-4 p-3 bg-white text-center h-100 d-flex align-items-center justify-content-center"
+                style={{
+                  minHeight: "90px",
+                }}
+              >
+                <img
+                  src="/partners/mpesa.png"
+                  alt="M-Pesa"
+                  className="img-fluid"
+                  style={{
+                    maxHeight: "45px",
+                    maxWidth: "100px",
+                    objectFit: "contain",
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* AIRTEL MONEY */}
+            <div className="col-6 col-sm-4 col-md-2">
+              <div
+                className="border rounded-4 p-3 bg-white text-center h-100 d-flex align-items-center justify-content-center"
+                style={{
+                  minHeight: "90px",
+                }}
+              >
+                <img
+                  src="/partners/airtel-money.png"
+                  alt="Airtel Money"
+                  className="img-fluid"
+                  style={{
+                    maxHeight: "45px",
+                    maxWidth: "100px",
+                    objectFit: "contain",
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* PESAPAL */}
+            <div className="col-6 col-sm-4 col-md-2">
+              <div
+                className="border rounded-4 p-3 bg-white text-center h-100 d-flex align-items-center justify-content-center"
+                style={{
+                  minHeight: "90px",
+                }}
+              >
+                <img
+                  src="/partners/pesapal.png"
+                  alt="Pesapal"
+                  className="img-fluid"
+                  style={{
+                    maxHeight: "45px",
+                    maxWidth: "100px",
+                    objectFit: "contain",
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* VISA */}
+            <div className="col-6 col-sm-4 col-md-2">
+              <div
+                className="border rounded-4 p-3 bg-white text-center h-100 d-flex align-items-center justify-content-center"
+                style={{
+                  minHeight: "90px",
+                }}
+              >
+                <img
+                  src="/partners/visa.png"
+                  alt="Visa"
+                  className="img-fluid"
+                  style={{
+                    maxHeight: "40px",
+                    maxWidth: "90px",
+                    objectFit: "contain",
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* MASTERCARD */}
+            <div className="col-6 col-sm-4 col-md-2">
+              <div
+                className="border rounded-4 p-3 bg-white text-center h-100 d-flex align-items-center justify-content-center"
+                style={{
+                  minHeight: "90px",
+                }}
+              >
+                <img
+                  src="/partners/mastercard.png"
+                  alt="Mastercard"
+                  className="img-fluid"
+                  style={{
+                    maxHeight: "45px",
+                    maxWidth: "90px",
+                    objectFit: "contain",
+                  }}
+                />
+              </div>
+            </div>
+
+          </div>
+
+          <div
+            className="alert border-0 rounded-3 mt-4 mb-0 small"
             style={{
-              maxHeight: "45px",
-              maxWidth: "100px",
-              objectFit: "contain",
+              backgroundColor: "#f1f8f4",
+              color: "#0f5132",
             }}
-          />
+          >
+            <div className="d-flex gap-2 align-items-start">
+              <span style={{ fontSize: "18px" }}>
+                🔒
+              </span>
+
+              <div>
+                <strong>Secure Payment Information</strong>
+
+                <p className="mb-0 mt-1 text-muted">
+                  Payment options may vary depending on the services
+                  currently enabled on the Veran Enterprise platform.
+                </p>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
-
-      {/* AIRTEL MONEY */}
-      <div className="col-6 col-sm-4 col-md-2">
-        <div
-          className="border rounded-4 p-3 bg-white text-center h-100 d-flex align-items-center justify-content-center"
-          style={{
-            minHeight: "90px",
-          }}
-        >
-          <img
-            src="/partners/airtel-money.png"
-            alt="Airtel Money"
-            className="img-fluid"
-            style={{
-              maxHeight: "45px",
-              maxWidth: "100px",
-              objectFit: "contain",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* PESAPAL */}
-      <div className="col-6 col-sm-4 col-md-2">
-        <div
-          className="border rounded-4 p-3 bg-white text-center h-100 d-flex align-items-center justify-content-center"
-          style={{
-            minHeight: "90px",
-          }}
-        >
-          <img
-            src="/partners/pesapal.png"
-            alt="Pesapal"
-            className="img-fluid"
-            style={{
-              maxHeight: "45px",
-              maxWidth: "100px",
-              objectFit: "contain",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* VISA */}
-      <div className="col-6 col-sm-4 col-md-2">
-        <div
-          className="border rounded-4 p-3 bg-white text-center h-100 d-flex align-items-center justify-content-center"
-          style={{
-            minHeight: "90px",
-          }}
-        >
-          <img
-            src="/partners/visa.png"
-            alt="Visa"
-            className="img-fluid"
-            style={{
-              maxHeight: "40px",
-              maxWidth: "90px",
-              objectFit: "contain",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* MASTERCARD */}
-      <div className="col-6 col-sm-4 col-md-2">
-        <div
-          className="border rounded-4 p-3 bg-white text-center h-100 d-flex align-items-center justify-content-center"
-          style={{
-            minHeight: "90px",
-          }}
-        >
-          <img
-            src="/partners/mastercard.png"
-            alt="Mastercard"
-            className="img-fluid"
-            style={{
-              maxHeight: "45px",
-              maxWidth: "90px",
-              objectFit: "contain",
-            }}
-          />
-        </div>
-      </div>
-
-    </div>
-
-    <div
-      className="alert border-0 rounded-3 mt-4 mb-0 small"
-      style={{
-        backgroundColor: "#f1f8f4",
-        color: "#0f5132",
-      }}
-    >
-      <div className="d-flex gap-2 align-items-start">
-        <span style={{ fontSize: "18px" }}>
-          🔒
-        </span>
-
-        <div>
-          <strong>Secure Payment Information</strong>
-
-          <p className="mb-0 mt-1 text-muted">
-            Payment options may vary depending on the services
-            currently enabled on the Veran Enterprise platform.
-          </p>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
 
       {/* ==========================================
           STK UNAVAILABLE MODAL

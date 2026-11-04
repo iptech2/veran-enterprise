@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import api from "../services/api";
@@ -10,6 +11,26 @@ export default function Withdraw() {
   const [loading, setLoading] = useState(false);
 
   // ==========================================
+  // LOAD REGISTERED PHONE NUMBER
+  // ==========================================
+  useEffect(() => {
+    try {
+      const savedUser = JSON.parse(
+        localStorage.getItem("user") || "{}"
+      );
+
+      const registeredPhone =
+        savedUser?.phone || savedUser?.user?.phone || "";
+
+      if (registeredPhone) {
+        setPhone(registeredPhone);
+      }
+    } catch (error) {
+      console.error("Unable to load registered phone:", error);
+    }
+  }, []);
+
+  // ==========================================
   // LOAD WALLET + WITHDRAWAL HISTORY
   // ==========================================
   const loadData = async () => {
@@ -20,9 +41,7 @@ export default function Withdraw() {
       const history = await api.get("/withdrawals");
       setWithdrawals(history.data || []);
     } catch (err) {
-      console.log(
-        err.response?.data || err.message
-      );
+      console.log(err.response?.data || err.message);
     }
   };
 
@@ -70,8 +89,8 @@ export default function Withdraw() {
       );
 
       setAmount("");
-      setPhone("");
 
+      // Keep the registered M-Pesa number populated.
       await loadData();
     } catch (err) {
       alert(
@@ -110,10 +129,7 @@ export default function Withdraw() {
   const formatStatus = (status) => {
     if (!status) return "Unknown";
 
-    return (
-      status.charAt(0).toUpperCase() +
-      status.slice(1)
-    );
+    return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
   return (
@@ -122,98 +138,60 @@ export default function Withdraw() {
 
       <div className="container py-5">
 
-        {/* ==========================================
-            PAGE HEADER
-        ========================================== */}
-
         <div className="text-center mb-5">
-
-          <h1 className="fw-bold">
-            Withdraw Funds
-          </h1>
+          <h1 className="fw-bold">Withdraw Funds</h1>
 
           <p className="text-muted mb-0">
-            Request a withdrawal from your Veran
-            Enterprise wallet to your M-Pesa number.
+            Request a withdrawal from your Veran Enterprise wallet to your M-Pesa number.
           </p>
-
         </div>
 
-
-        {/* ==========================================
-            BALANCE CARD
-        ========================================== */}
-
+        {/* BALANCE CARD */}
         <div className="card border-0 shadow-sm rounded-4 mb-4">
-
           <div className="card-body p-4">
-
             <div className="row align-items-center">
-
               <div className="col-md-7">
-
                 <p className="text-muted mb-1">
                   Available Wallet Balance
                 </p>
 
                 <h2 className="fw-bold text-success mb-0">
-                  KES{" "}
-                  {Number(balance).toLocaleString()}
+                  KES {Number(balance).toLocaleString()}
                 </h2>
-
               </div>
 
               <div className="col-md-5 text-md-end mt-3 mt-md-0">
-
                 <span className="badge bg-light text-dark border px-3 py-2">
                   Available for Withdrawal
                 </span>
-
               </div>
-
             </div>
-
           </div>
-
         </div>
 
-
-        {/* ==========================================
-            WITHDRAWAL FORM
-        ========================================== */}
-
+        {/* WITHDRAWAL FORM */}
         <div className="card border-0 shadow-sm rounded-4 mb-4">
-
           <div className="card-body p-4 p-md-5">
 
             <div className="mb-4">
-
               <h4 className="fw-bold mb-1">
                 Request Withdrawal
               </h4>
 
               <p className="text-muted mb-0">
-                Enter the amount and M-Pesa number
-                where you want to receive your money.
+                Enter the amount and M-Pesa number where you want to receive your money.
               </p>
-
             </div>
-
 
             <div className="row">
 
-              {/* ==================================
-                  AMOUNT
-              ================================== */}
-
+              {/* AMOUNT */}
               <div className="col-md-6 mb-4">
-
                 <label className="form-label fw-semibold">
                   Withdrawal Amount
                 </label>
 
                 <div className="input-group input-group-lg">
-
                   <span className="input-group-text fw-semibold">
                     KES
                   </span>
@@ -224,193 +202,121 @@ export default function Withdraw() {
                     placeholder="Enter amount"
                     min="1"
                     value={amount}
-                    onChange={(e) =>
-                      setAmount(e.target.value)
-                    }
+                    onChange={(e) => setAmount(e.target.value)}
                   />
-
                 </div>
 
                 <small className="text-muted">
                   Maximum available: KES{" "}
                   {Number(balance).toLocaleString()}
                 </small>
-
               </div>
 
-
-              {/* ==================================
-                  PHONE
-              ================================== */}
-
+              {/* PHONE */}
               <div className="col-md-6 mb-4">
-
                 <label className="form-label fw-semibold">
                   M-Pesa Phone Number
                 </label>
 
                 <input
-                  type="text"
+                  type="tel"
                   className="form-control form-control-lg"
                   placeholder="2547XXXXXXXX"
                   value={phone}
-                  onChange={(e) =>
-                    setPhone(e.target.value)
-                  }
+                  onChange={(e) => setPhone(e.target.value)}
+                  autoComplete="tel"
                 />
 
                 <small className="text-muted">
-                  Enter the M-Pesa number that should
-                  receive the withdrawal.
+                  Automatically filled using your registered phone number. You can edit it if necessary.
                 </small>
-
               </div>
 
             </div>
 
-
-            {/* ==================================
-                QUICK AMOUNT BUTTONS
-            ================================== */}
-
+            {/* QUICK AMOUNTS */}
             <div className="mb-4">
-
               <label className="form-label fw-semibold">
                 Quick Amount
               </label>
 
               <div className="d-flex flex-wrap gap-2">
-
-                {[500, 1000, 2000, 5000].map(
-                  (quickAmount) => (
-
-                    <button
-                      key={quickAmount}
-                      type="button"
-                      className="btn btn-outline-secondary"
-                      onClick={() => {
-                        if (
-                          quickAmount <=
-                          Number(balance)
-                        ) {
-                          setAmount(
-                            quickAmount.toString()
-                          );
-                        } else {
-                          alert(
-                            "This amount is higher than your available wallet balance."
-                          );
-                        }
-                      }}
-                    >
-                      KES{" "}
-                      {quickAmount.toLocaleString()}
-                    </button>
-
-                  )
-                )}
-
+                {[500, 1000, 2000, 5000].map((quickAmount) => (
+                  <button
+                    key={quickAmount}
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => {
+                      if (quickAmount <= Number(balance)) {
+                        setAmount(quickAmount.toString());
+                      } else {
+                        alert(
+                          "This amount is higher than your available wallet balance."
+                        );
+                      }
+                    }}
+                  >
+                    KES {quickAmount.toLocaleString()}
+                  </button>
+                ))}
               </div>
-
             </div>
 
-
-            {/* ==================================
-                SUBMIT BUTTON
-            ================================== */}
-
+            {/* SUBMIT */}
             <div className="d-grid">
-
               <button
                 type="button"
                 className="btn btn-danger btn-lg rounded-3"
                 onClick={submitWithdrawal}
-                disabled={
-                  loading || Number(balance) <= 0
-                }
+                disabled={loading || Number(balance) <= 0}
               >
                 {loading
                   ? "Submitting Withdrawal..."
                   : "Request Withdrawal"}
               </button>
-
             </div>
 
-
-            {/* ==================================
-                WITHDRAWAL NOTICE
-            ================================== */}
-
+            {/* WITHDRAWAL NOTICE */}
             <div className="alert alert-warning border-0 rounded-3 mt-4 mb-0">
-
               <div className="d-flex">
-
-                <div className="me-2">
-                  ⚠️
-                </div>
+                <div className="me-2">⚠️</div>
 
                 <div>
-
-                  <strong>
-                    Withdrawal Notice
-                  </strong>
+                  <strong>Withdrawal Notice</strong>
 
                   <p className="mb-0 mt-1 small">
-                    Make sure the amount and M-Pesa
-                    phone number are correct before
-                    submitting your request. Withdrawal
-                    requests are reviewed and processed
-                    by Veran Enterprise.
+                    Make sure the amount and M-Pesa phone number are correct before submitting your request. Withdrawal requests are reviewed and processed by Veran Enterprise.
                   </p>
-
                 </div>
-
               </div>
-
             </div>
 
           </div>
-
         </div>
 
-
-        {/* ==========================================
-            WITHDRAWAL HISTORY
-        ========================================== */}
-
+        {/* WITHDRAWAL HISTORY */}
         <div className="card border-0 shadow-sm rounded-4">
-
           <div className="card-body p-4 p-md-5">
 
             <div className="d-flex justify-content-between align-items-center mb-4">
-
               <div>
-
                 <h4 className="fw-bold mb-1">
                   Withdrawal History
                 </h4>
 
                 <p className="text-muted mb-0">
-                  Track your previous withdrawal
-                  requests.
+                  Track your previous withdrawal requests.
                 </p>
-
               </div>
 
               <span className="badge bg-light text-dark border px-3 py-2">
                 {withdrawals.length}{" "}
-                {withdrawals.length === 1
-                  ? "Request"
-                  : "Requests"}
+                {withdrawals.length === 1 ? "Request" : "Requests"}
               </span>
-
             </div>
 
-
             {withdrawals.length === 0 ? (
-
               <div className="text-center py-5">
-
                 <div
                   className="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3"
                   style={{
@@ -427,47 +333,30 @@ export default function Withdraw() {
                 </h5>
 
                 <p className="text-muted mb-0">
-                  Your withdrawal requests will
-                  appear here.
+                  Your withdrawal requests will appear here.
                 </p>
-
               </div>
-
             ) : (
-
               <div>
-
                 {withdrawals.map((item) => (
-
                   <div
                     key={item._id}
                     className="border rounded-4 p-4 mb-3"
                   >
-
                     <div className="row align-items-center">
 
-                      {/* Amount */}
-
                       <div className="col-md-4 mb-3 mb-md-0">
-
                         <small className="text-muted d-block">
                           Amount
                         </small>
 
                         <h5 className="fw-bold mb-0">
                           KES{" "}
-                          {Number(
-                            item.amount || 0
-                          ).toLocaleString()}
+                          {Number(item.amount || 0).toLocaleString()}
                         </h5>
-
                       </div>
 
-
-                      {/* Phone */}
-
                       <div className="col-md-4 mb-3 mb-md-0">
-
                         <small className="text-muted d-block">
                           M-Pesa Number
                         </small>
@@ -475,124 +364,73 @@ export default function Withdraw() {
                         <span className="fw-semibold">
                           {item.phone || "-"}
                         </span>
-
                       </div>
 
-
-                      {/* Status */}
-
                       <div className="col-md-4">
-
                         <small className="text-muted d-block mb-1">
                           Status
                         </small>
 
                         <span
-                          className={`badge ${getStatusBadge(
-                            item.status
-                          )} px-3 py-2`}
+                          className={`badge ${getStatusBadge(item.status)} px-3 py-2`}
                         >
-                          {formatStatus(
-                            item.status
-                          )}
+                          {formatStatus(item.status)}
                         </span>
-
                       </div>
-
                     </div>
-
 
                     <hr />
 
-
                     <div className="row">
-
-                      {/* Date */}
-
                       <div className="col-md-6">
-
                         <small className="text-muted d-block">
                           Request Date
                         </small>
 
                         <span>
                           {item.createdAt
-                            ? new Date(
-                                item.createdAt
-                              ).toLocaleString()
+                            ? new Date(item.createdAt).toLocaleString()
                             : "-"}
                         </span>
-
                       </div>
 
-
-                      {/* Reference */}
-
                       <div className="col-md-6 mt-3 mt-md-0">
-
                         <small className="text-muted d-block">
                           Reference
                         </small>
 
                         <span className="text-break">
-                          {item.reference ||
-                            item._id ||
-                            "-"}
+                          {item.reference || item._id || "-"}
                         </span>
-
                       </div>
-
                     </div>
 
-
-                    {/* Admin Note */}
-
                     {item.adminNote && (
-
                       <div className="alert alert-light border mt-3 mb-0">
-
                         <small className="text-muted d-block">
                           Admin Note
                         </small>
 
-                        <span>
-                          {item.adminNote}
-                        </span>
-
+                        <span>{item.adminNote}</span>
                       </div>
-
                     )}
-
                   </div>
-
                 ))}
-
               </div>
-
             )}
 
           </div>
-
         </div>
 
-
-        {/* ==========================================
-            SECURITY NOTICE
-        ========================================== */}
-
+        {/* SECURITY NOTICE */}
         <div className="alert alert-light border rounded-4 mt-4">
-
           <h6 className="fw-bold mb-2">
             🔐 Wallet Security
           </h6>
 
           <p className="text-muted small mb-0">
-            Never share your password, PIN, or other
-            account security information with anyone.
-            Veran Enterprise will never ask you to
-            disclose your M-Pesa PIN.
+            Never share your password, PIN, or other account security information with anyone. Veran Enterprise will never ask you to disclose your M-Pesa PIN.
           </p>
-
         </div>
 
       </div>

@@ -1,3 +1,4 @@
+
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -16,7 +17,83 @@ const generateReferralCode = () => {
 };
 
 /* =========================
+   PHONE NUMBER SEARCH VARIANTS
+   SUPPORTS KENYAN FORMATS
+========================= */
+const getPhoneSearchVariants = (input) => {
+  let digits = String(input || "").replace(/\D/g, "");
+
+  if (digits.startsWith("00")) {
+    digits = digits.slice(2);
+  }
+
+  const variants = new Set();
+
+  if (!digits) return [];
+
+  variants.add(digits);
+  variants.add(`+${digits}`);
+
+  // 0712345678
+  if (digits.startsWith("0") && digits.length === 10) {
+    const nationalNumber = digits.slice(1);
+
+    variants.add(nationalNumber);
+    variants.add(`254${nationalNumber}`);
+    variants.add(`+254${nationalNumber}`);
+  }
+
+  // 254712345678
+  else if (digits.startsWith("254") && digits.length === 12) {
+    const nationalNumber = digits.slice(3);
+
+    variants.add(nationalNumber);
+    variants.add(`0${nationalNumber}`);
+    variants.add(`+254${nationalNumber}`);
+  }
+
+  // 712345678
+  else if (digits.length === 9) {
+    variants.add(`0${digits}`);
+    variants.add(`254${digits}`);
+    variants.add(`+254${digits}`);
+  }
+
+  return [...variants];
+};
+
+/* =========================
+   CANONICAL PHONE NUMBER
+   KENYAN NUMBERS STORED AS
+   254712345678
+========================= */
+const normalizePhoneNumber = (input) => {
+  let digits = String(input || "").replace(/\D/g, "");
+
+  if (digits.startsWith("00")) {
+    digits = digits.slice(2);
+  }
+
+  if (digits.startsWith("0") && digits.length === 10) {
+    return `254${digits.slice(1)}`;
+  }
+
+  if (digits.startsWith("254") && digits.length === 12) {
+    return digits;
+  }
+
+  if (digits.length === 9) {
+    return `254${digits}`;
+  }
+
+  // Preserve international numbers in normalized format.
+  return digits;
+};
+
+/* =========================
    REGISTER
+   EMAIL VERIFICATION DISABLED
+   EMAIL AND PHONE MUST BE UNIQUE
 ========================= */
 exports.register = async (req, res) => {
   try {
@@ -34,20 +111,74 @@ exports.register = async (req, res) => {
       });
     }
 
-    const exists = await User.findOne({ email });
+    const normalizedName = String(fullName).trim();
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const normalizedPhone = normalizePhoneNumber(phone);
 
-    if (exists) {
+    if (!normalizedName) {
       return res.status(400).json({
-        message: "Email already exists",
+        message: "Full name is required",
       });
     }
 
-    // Optional referral
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return res.status(400).json({
+        message: "Please enter a valid email address",
+      });
+    }
+
+    const phoneVariants = getPhoneSearchVariants(phone);
+
+    if (!phoneVariants.length || !normalizedPhone) {
+      return res.status(400).json({
+        message: "Please enter a valid phone number",
+      });
+    }
+
+    if (String(password).length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters",
+      });
+    }
+
+    /* =========================
+       CHECK EMAIL UNIQUENESS
+    ========================= */
+
+    const existingEmail = await User.findOne({
+      email: normalizedEmail,
+    });
+
+    if (existingEmail) {
+      return res.status(409).json({
+        message: "This email address is already registered. Please use another email.",
+      });
+    }
+
+    /* =========================
+       CHECK PHONE UNIQUENESS
+       CHECKS OLD FORMATS TOO
+    ========================= */
+
+    const existingPhone = await User.findOne({
+      phone: { $in: phoneVariants },
+    });
+
+    if (existingPhone) {
+      return res.status(409).json({
+        message: "This phone number is already registered. Please use another number.",
+      });
+    }
+
+    /* =========================
+       OPTIONAL REFERRAL
+    ========================= */
+
     let referrer = null;
 
-    if (referralCode) {
+    if (referralCode && String(referralCode).trim()) {
       referrer = await User.findOne({
-        referralCode,
+        referralCode: String(referralCode).trim().toUpperCase(),
       });
 
       if (!referrer) {
@@ -57,87 +188,113 @@ exports.register = async (req, res) => {
       }
     }
 
+    /* =========================
+       HASH PASSWORD
+    ========================= */
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const token = crypto.randomBytes(32).toString("hex");
+    /* =========================
+       GENERATE UNIQUE REFERRAL
+       CODE
+    ========================= */
 
-    // Generate unique referral code
     let myReferralCode;
     let existsCode = true;
 
     while (existsCode) {
       myReferralCode = generateReferralCode();
 
-      existsCode = await User.findOne({
+      existsCode = await User.exists({
         referralCode: myReferralCode,
       });
     }
 
+    /* =========================
+       CREATE ACCOUNT
+       NO EMAIL VERIFICATION
+    ========================= */
+
     const user = await User.create({
-      fullName,
-      email,
-      phone,
+      fullName: normalizedName,
+      email: normalizedEmail,
+      phone: normalizedPhone,
       password: hashedPassword,
 
       referralCode: myReferralCode,
       referredBy: referrer ? referrer._id : null,
 
-      emailVerificationToken: token,
-      isVerified: false,
+      isVerified: true,
+      emailVerificationToken: null,
     });
-    
-    await createNotification(
-  user._id,
-  "Welcome to Veran Enterprise",
-  "Your account has been created successfully. Please verify your email.",
-  "system"
-);
 
-    const verifyLink = `${process.env.CLIENT_URL}/verify/${token}`;
+    /* =========================
+       WELCOME NOTIFICATION
+    ========================= */
 
-sendEmail(
-  email,
-  "Verify Your Account",
-  `
-  <div style="font-family:Arial;padding:20px">
+    try {
+      await createNotification(
+        user._id,
+        "Welcome to Veran Enterprise",
+        "Your account has been created successfully. You can now log in using your phone number or email address.",
+        "system"
+      );
+    } catch (notificationError) {
+      console.error(
+        "WELCOME NOTIFICATION ERROR:",
+        notificationError.message
+      );
+    }
 
-    <h2>Welcome to Veran Enterprise</h2>
-
-    <p>Please verify your email to activate your account.</p>
-
-    <a
-      href="${verifyLink}"
-      style="
-        display:inline-block;
-        padding:12px 20px;
-        background:#198754;
-        color:white;
-        text-decoration:none;
-        border-radius:5px;
-      "
-    >
-      Verify Email
-    </a>
-
-  </div>
-  `
-).catch((err) => {
-  console.error("Verification email failed:", err.message);
-});
     return res.status(201).json({
       success: true,
-      message: "Registration successful. Check your email.",
+      message: "Registration successful. You can now log in using your phone number or email address.",
     });
 
   } catch (error) {
+    console.error("REGISTRATION ERROR:", error);
+
+    /* =========================
+       HANDLE DATABASE DUPLICATES
+    ========================= */
+
+    if (error.code === 11000) {
+      const duplicateField = Object.keys(
+        error.keyPattern || {}
+      )[0];
+
+      if (duplicateField === "email") {
+        return res.status(409).json({
+          message: "This email address is already registered.",
+        });
+      }
+
+      if (duplicateField === "phone") {
+        return res.status(409).json({
+          message: "This phone number is already registered.",
+        });
+      }
+
+      if (duplicateField === "referralCode") {
+        return res.status(409).json({
+          message: "Please try registering again.",
+        });
+      }
+
+      return res.status(409).json({
+        message: "An account with these details already exists.",
+      });
+    }
+
     return res.status(500).json({
-      message: error.message,
+      message: "Registration failed. Please try again.",
     });
   }
 };
 
 /* =========================
    VERIFY EMAIL
+   RETAINED FOR OLD ACCOUNTS
 ========================= */
 exports.verifyEmail = async (req, res) => {
   try {
@@ -171,6 +328,8 @@ exports.verifyEmail = async (req, res) => {
     });
 
   } catch (error) {
+    console.error("EMAIL VERIFICATION ERROR:", error);
+
     return res.status(500).json({
       message: error.message,
     });
@@ -178,35 +337,58 @@ exports.verifyEmail = async (req, res) => {
 };
 
 /* =========================
-   LOGIN
+   LOGIN USING EMAIL OR PHONE
+   PHONE NUMBER IS PRIMARY
 ========================= */
 exports.login = async (req, res) => {
   try {
     const { email, phone, password } = req.body;
 
-    if (!password || (!email && !phone)) {
+    if ((!email && !phone) || !password) {
       return res.status(400).json({
-        message: "Email or phone and password required",
+        message: "Phone number or email address and password are required",
       });
     }
 
-    // Clean input
-    const identifier = (email || phone).trim();
+    let user;
+    let loginIdentifier;
 
-    // Find user
-    const user = await User.findOne(
-      email
-        ? { email: identifier }
-        : { phone: identifier }
-    ).lean();
+    // Email login
+    if (email) {
+      loginIdentifier = String(email).trim().toLowerCase();
+
+      user = await User.findOne({
+        email: loginIdentifier,
+      }).lean();
+    }
+
+    // Phone login
+    else {
+      loginIdentifier = String(phone).trim();
+
+      const phoneVariants = getPhoneSearchVariants(loginIdentifier);
+
+      if (!phoneVariants.length) {
+        return res.status(400).json({
+          message: "Please enter a valid phone number",
+        });
+      }
+
+      user = await User.findOne({
+        phone: { $in: phoneVariants },
+      }).lean();
+    }
 
     if (!user) {
       return res.status(400).json({
-        message: "Invalid credentials",
+        message: "Invalid phone number, email address or password",
       });
     }
 
-    // Check password
+    /* =========================
+       CHECK PASSWORD
+    ========================= */
+
     const match = await bcrypt.compare(
       password,
       user.password
@@ -214,18 +396,27 @@ exports.login = async (req, res) => {
 
     if (!match) {
       return res.status(400).json({
-        message: "Invalid credentials",
+        message: "Invalid phone number, email address or password",
       });
     }
 
-    // Check email verification
-    if (!user.isVerified) {
+    /* =========================
+       CHECK ACCOUNT STATUS
+    ========================= */
+
+    if (
+      user.status === "suspended" ||
+      user.status === "blocked"
+    ) {
       return res.status(403).json({
-        message: "Please verify your email first",
+        message: "Your account has been suspended or blocked. Please contact support.",
       });
     }
 
-    // Generate JWT
+    /* =========================
+       GENERATE JWT
+    ========================= */
+
     const token = jwt.sign(
       {
         id: user._id,
@@ -262,86 +453,25 @@ exports.login = async (req, res) => {
   }
 };
 
-// /* =========================
-//    LOGIN
-// ========================= */
-// exports.login = async (req, res) => {
-//   try {
-//     const { email, phone, password } = req.body;
-
-//     if (!password || (!email && !phone)) {
-//       return res.status(400).json({
-//         message: "Email or phone and password required",
-//       });
-//     }
-
-//     const user = await User.findOne({
-//       $or: [
-//         email ? { email } : null,
-//         phone ? { phone } : null,
-//       ].filter(Boolean),
-//     });
-
-//     if (!user) {
-//       return res.status(400).json({
-//         message: "Invalid credentials",
-//       });
-//     }
-
-//     const match = await bcrypt.compare(password, user.password);
-
-//     if (!match) {
-//       return res.status(400).json({
-//         message: "Invalid credentials",
-//       });
-//     }
-
-//     if (!user.isVerified) {
-//       return res.status(403).json({
-//         message: "Please verify your email first",
-//       });
-//     }
-
-//     const token = jwt.sign(
-//       {
-//         id: user._id,
-//         role: user.role,
-//       },
-//       process.env.JWT_SECRET,
-//       {
-//         expiresIn: "7d",
-//       }
-//     );
-
-//     return res.json({
-//       token,
-//       user: {
-//         id: user._id,
-//         fullName: user.fullName,
-//         email: user.email,
-//         phone: user.phone,
-//         role: user.role,
-//         balance: user.balance,
-//         isVerified: user.isVerified,
-//         referralCode: user.referralCode,
-//       },
-//     });
-
-//   } catch (error) {
-//     return res.status(500).json({
-//       message: error.message,
-//     });
-//   }
-// };
-
 /* =========================
    FORGOT PASSWORD
+   EMAIL RESET RETAINED
 ========================= */
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const user = await User.findOne({ email });
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required",
+      });
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+
+    const user = await User.findOne({
+      email: normalizedEmail,
+    });
 
     if (!user) {
       return res.status(404).json({
@@ -358,51 +488,40 @@ exports.forgotPassword = async (req, res) => {
 
     const resetLink = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
-    // await sendEmail(
-    //   email,
-    //   "Password Reset",
-    //   `
-    //   <h2>Password Reset Request</h2>
+    sendEmail(
+      normalizedEmail,
+      "Password Reset",
+      `
+      <div style="font-family:Arial;padding:20px">
+        <h2>Password Reset</h2>
+        <p>Click the button below to reset your password.</p>
 
-    //   <a href="${resetLink}">
-    //     Reset Password
-    //   </a>
-    //   `
-    // );
-sendEmail(
-  email,
-  "Password Reset",
-  `
-  <div style="font-family:Arial;padding:20px">
+        <a
+          href="${resetLink}"
+          style="
+            display:inline-block;
+            padding:12px 20px;
+            background:#0d6efd;
+            color:white;
+            text-decoration:none;
+            border-radius:5px;
+          "
+        >
+          Reset Password
+        </a>
+      </div>
+      `
+    ).catch((err) => {
+      console.error("Password reset email failed:", err.message);
+    });
 
-    <h2>Password Reset</h2>
-
-    <p>Click the button below to reset your password.</p>
-
-    <a
-      href="${resetLink}"
-      style="
-        display:inline-block;
-        padding:12px 20px;
-        background:#0d6efd;
-        color:white;
-        text-decoration:none;
-        border-radius:5px;
-      "
-    >
-      Reset Password
-    </a>
-
-  </div>
-  `
-).catch((err) => {
-  console.error("Password reset email failed:", err.message);
-});
     return res.json({
       message: "Password reset email sent",
     });
 
   } catch (error) {
+    console.error("FORGOT PASSWORD ERROR:", error);
+
     return res.status(500).json({
       message: error.message,
     });
@@ -417,6 +536,12 @@ exports.resetPassword = async (req, res) => {
     const { token } = req.params;
     const { password } = req.body;
 
+    if (!password || password.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters",
+      });
+    }
+
     const user = await User.findOne({
       passwordResetToken: token,
     });
@@ -427,7 +552,10 @@ exports.resetPassword = async (req, res) => {
       });
     }
 
-    if (user.passwordResetExpires < Date.now()) {
+    if (
+      !user.passwordResetExpires ||
+      user.passwordResetExpires < Date.now()
+    ) {
       return res.status(400).json({
         message: "Token expired",
       });
@@ -444,6 +572,8 @@ exports.resetPassword = async (req, res) => {
     });
 
   } catch (error) {
+    console.error("RESET PASSWORD ERROR:", error);
+
     return res.status(500).json({
       message: error.message,
     });
